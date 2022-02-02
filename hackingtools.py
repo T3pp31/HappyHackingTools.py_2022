@@ -55,7 +55,7 @@ def get_addr(network_part):
     ip_addr_list = []
     
     
-    for i in range (0,10):
+    for i in range (0,255):
         i = str(i)
         dst_addr = network_part + i
         ip_addr_list.append(dst_addr)
