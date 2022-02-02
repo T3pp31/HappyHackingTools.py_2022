@@ -1,0 +1,35 @@
+<title>LanScan</title>
+<h1><a href='/'>HappyHackingTools</a></h1>
+
+
+<h2>LanScan<h2>
+    <body>
+        <h6>LAN内に存在するデバイスを探索します．</h6>
+        <h6>返答には時間がかかります．新しいタブに結果が表示されます．</h6>
+        <table>
+            {% if result %}
+            <iframe src="{{ lanscan }}"
+            {% endif %}
+        </table>
+        <form action="./lanscan" method="POST">
+            <input type="submit" />
+        </form>
+
+    </body>
+
+    <body>        
+
+
+
+    </body>
+
+
+
+<h1>memo</h1>
+<p>探す範囲ポート指定，指定したポートにパケットを送信，ポートスキャンを実装する予定</p>
+
+
+
+
+
+<footer>Powered by Fu-Te</footer>

@@ -1,0 +1,21 @@
+<title>PortScan</title>
+<h1><a href='/'>HappyHackingTools</a></h1>
+<h1>PortScan</h1>
+<h2>指定したIPアドレスの空いているポートを探します．</h2>
+<p>対象IPアドレス,開始ポート,終了ポートで入力してください．</p>
+<p>例</p>
+<p>127.0.0.1,0,35535</p>
+<form action="./portscan" method="POST" enctype="multipart/form-data">
+	<input type="text" name="web_input">
+	<input type="submit" value="送信">
+
+</form>
+
+<body>
+    <h3>結果</h3>
+    {% if result %}
+    <p> {{result}} </p>
+    {% endif %}
+
+</body>
+
