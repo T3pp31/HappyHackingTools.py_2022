@@ -163,7 +163,7 @@ def lan_scan():
     df = make_df(ip_addr_list,mac_addr_list,host_list,vendor_list,vendor_address)
     print(df.head())
     
-def port_scan(ip,port=0,port_end=35535):
+def port_scan(ip,port=0,port_end=65535):
     ip = ip
     port = int(port)
     port_end = int(port_end)
