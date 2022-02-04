@@ -5,14 +5,13 @@
 <h2>LanScan<h2>
     <body>
         <h6>LAN内に存在するデバイスを探索します．</h6>
-        <h6>0~255まで調べるので，時間がかかります．（高速化検討中）返答には時間がかかります．新しいタブに結果が表示されます．</h6>
-        <table>
-            {% if result %}
-            <iframe src="{{ lanscan }}"
-            {% endif %}
-        </table>
-        <form action="./lanscan" method="POST">
-            <input type="submit" />
+        <h6>数字の幅が大きくなると時間がかかります．（高速化検討中）返答には時間がかかります．新しいタブに結果が表示されます．</h6>
+        <h6>検索したいホスト部を指定してください(0-255)</h6>
+        <h6>例)0,255</h6>
+        <form action="/lanscan" method="POST" enctype="multipart/form-data">
+            <input type="text" name="web_input">
+            <input type="submit" value="送信">
+        
         </form>
 
     </body>

@@ -19,9 +19,11 @@ def flask_lanscan():
         return render_template('lanscan.html')
     try:
         if request.method == 'POST':
-            lanscan_result = lan_scan()
+            web_input=request.form.get('web_input')
+            start,end=web_input.split(',')
+            lanscan_result = lan_scan(start,end)
         
-            return webbrowser.open_new_tab('http://127.0.0.1:8000/lanscan_result'),render_template('lanscan.heml')
+            return render_template('lanscan.html'),webbrowser.open_new_tab('http://127.0.0.1:8000/lanscan_result')
     except:
         return render_template('lanscan.html')
     

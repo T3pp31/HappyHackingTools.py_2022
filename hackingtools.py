@@ -46,16 +46,18 @@ def get_network_part(my_ipaddr):
     return network_part
 
 # ICMPでブロードキャストを流し，返答を受け取ることで各種アドレスを特定
-def get_addr(network_part):
+def get_addr(network_part,start,end):
     # ICMPパケットを流して結果を1つだけ受け取る dstの後をブロードキャストアドレスにしたいところ
     # ネットワーク部だけ入力してもらって，後は繰り返す？ 192.168.1.0~192.168.1.254みたいに．
     #broadcast_ipaddr = 
     receives_ICMP = []
     receives_ARP = []
     ip_addr_list = []
+    print(start)
+    start=int(start)
+    end=int(end)
     
-    
-    for i in range (0,255):
+    for i in range (start,end+1):
         i = str(i)
         dst_addr = network_part + i
         ip_addr_list.append(dst_addr)
@@ -69,7 +71,6 @@ def get_addr(network_part):
             receives_ARP.append(receive[Ether].src)
         except:
             receives_ARP.append(receive)
-        
     return ip_addr_list,receives_ARP
 
 # arp
@@ -154,10 +155,10 @@ def make_df(ip_addr_list,mac_addr_list,host_list,vendor_name,vendor_address):
     
     return df
 
-def lan_scan():
+def lan_scan(start=0,end=255):
     own_ip = get_own_ip()
     network_part = get_network_part(own_ip)
-    ip_addr_list,mac_addr_list =get_addr(network_part)
+    ip_addr_list,mac_addr_list =get_addr(network_part,start,end)
     host_list = get_hostname(ip_addr_list)
     vendor_list,vendor_address=get_vendor_name(mac_addr_list)
     df = make_df(ip_addr_list,mac_addr_list,host_list,vendor_list,vendor_address)
