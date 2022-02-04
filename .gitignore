@@ -2,3 +2,4 @@ test.txt
 vendor.txt
 templates/result.html
 __pycache__
+.DS_Store
