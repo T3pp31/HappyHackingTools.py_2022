@@ -66,7 +66,7 @@ def get_addr(network_part,start,end):
         
         
         frame = Ether(dst='ff:ff:ff:ff:ff:ff') / ARP(op=1, pdst = dst_addr)
-        receive = srp1(frame,timeout=1,iface='en0')
+        receive = srp1(frame,timeout=0.1,iface='en0')
         try:
             receives_ARP.append(receive[Ether].src)
         except:
