@@ -1,6 +1,6 @@
 
 from flask import Flask, render_template,request,redirect
-from hackingtools import lan_scan,port_scan
+from hackingtools import get_own_ip, lan_scan,port_scan,get_own_ip
 import pandas as pd
 import webbrowser
 import os
@@ -10,7 +10,8 @@ app = Flask(__name__, static_folder='.', static_url_path='')
 
 @app.route('/')
 def show():
-    return render_template('index.html')
+    result = get_own_ip()
+    return render_template('index.html',result=result)
 
 @app.route('/lanscan',methods = ['GET','POST'])
 def flask_lanscan():

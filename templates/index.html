@@ -1,6 +1,9 @@
 <title>HappyHackingTools</title>
 <h1>HappyHackingTools</h1>
 
+{% if result %}
+<h2>あなたのアドレス:{{ result }}</h2>
+{% endif %}
 <h2><a href='/lanscan'>LanScan</a></h2>
 <h2><a href='/portscan'>PortScan</a></h2>
 <h2><a href='/binary'>Binary解析(未実装)</a></h2>
