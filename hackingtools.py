@@ -48,7 +48,7 @@ def get_network_part(my_ipaddr):
 
 # ICMPでブロードキャストを流し，返答を受け取ることで各種アドレスを特定
 def get_addr(network_part,start,end):
-    # ICMPパケットを流して結果を1つだけ受け取る dstの後をブロードキャストアドレスにしたいところ
+    # 現在はTypeC,192だけに対応．ARPを送って，返信があるアドレスはデバイスが存在するアドレス．
     # ネットワーク部だけ入力してもらって，後は繰り返す？ 192.168.1.0~192.168.1.254みたいに．
     #broadcast_ipaddr = 
     receives_ICMP = []
