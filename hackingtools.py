@@ -193,7 +193,7 @@ def port_scan(ip,port=0,port_end=65535):
             print(os.strerror(errno))
     return open_port
 
-    
+
     
 if __name__ == '__main__':
     lan_scan()
