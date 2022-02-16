@@ -61,4 +61,4 @@ def flask_binary():
         return render_template('binary.html',result=result,binary=binary)
     
 if __name__ == '__main__':
-    app.run(port=8000, debug=True)
+    app.run(port=5000, debug=True)

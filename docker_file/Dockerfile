@@ -14,4 +14,6 @@ RUN apt-get install -y vim
 RUN pip install --upgrade pip
 RUN pip install --upgrade setuptools
 RUN git clone https://github.com/Fu-Te/HappyHackingTools.py_2022.git
-RUN pip install flask scapy netifaces pandas numpy urllib.request json codecs time Queue os tqdm webbrowser
+RUN pip install flask scapy netifaces pandas tqdm
+
+EXPOSE 5000
