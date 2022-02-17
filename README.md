@@ -9,7 +9,11 @@ It is designed for penetration and CTF purposes, and should not be used for atta
 The owner of this repository assumes no responsibility whatsoever.
 
 # 動作環境
+## ※Docker調整中
+Dockerfileを用意していますが，そのままだと自分の属するセグメント内に存在するデバイスを探すことはできないです．そのための設定が以下のURL
+https://qiita.com/Meganezaru@github/items/69f406844532d731d370
 
+## 環境を用意する場合
 Python3.9.7で動作確認済
 
 必要なパッケージのインストール
@@ -22,7 +26,7 @@ $ pip install -r requirements.txt
 $ python3 app.py
 ```
 
-[http://127.0.0.1:8000](http://127.0.0.1:8000)にアクセスして利用可能．
+[http://127.0.0.1:5000](http://127.0.0.1:5000)にアクセスして利用可能．
 
 # 追加したい機能
 指定した通信をキャプチャし，表示したい
