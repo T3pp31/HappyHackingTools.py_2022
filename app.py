@@ -1,6 +1,6 @@
 
 from flask import Flask, render_template,request,redirect
-from hackingtools import get_own_ip, lan_scan,port_scan,get_own_ip
+from hackingtools import get_own_ip, lan_scan,port_scan,get_own_ip,arp_poisoning
 import pandas as pd
 import webbrowser
 import os
@@ -23,7 +23,7 @@ def flask_lanscan():
             start,end=web_input.split(',')
             lanscan_result = lan_scan(start,end)
         
-            return render_template('lanscan.html'),webbrowser.open_new_tab('http://127.0.0.1:8000/lanscan_result')
+            return render_template('lanscan.html'),webbrowser.open_new_tab('http://127.0.0.1:5000/lanscan_result')
     except:
         return render_template('lanscan.html')
     
@@ -60,5 +60,16 @@ def flask_binary():
 
         return render_template('binary.html',result=result,binary=binary)
     
+@app.route('/arp_spoofing',methods=['POST','GET'])
+def spoofing():
+    if request.method=='GET':
+        return render_template('arp_spoofing.html')
+    if request.method == 'POST':
+        web_input = request.form.get('web_input')
+        target_ip,gateway_ip=web_input.split(':')
+        arp_poisoning(target_ip,gateway_ip)
+        
+        return render_template('arp_spoofing.html')
+    
 if __name__ == '__main__':
-    app.run(port=5000, debug=True,host='0.0.0.0')
+    app.run(port=5000, debug=True)

