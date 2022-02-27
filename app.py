@@ -1,5 +1,6 @@
 
-from flask import Flask, render_template,request,redirect
+import mimetypes
+from flask import Flask, render_template,request,redirect,send_file
 from hackingtools import get_own_ip, lan_scan,port_scan,get_own_ip,arp_poisoning
 import pandas as pd
 import webbrowser
@@ -66,10 +67,17 @@ def spoofing():
         return render_template('arp_spoofing.html')
     if request.method == 'POST':
         web_input = request.form.get('web_input')
-        target_ip,gateway_ip=web_input.split(':')
-        arp_poisoning(target_ip,gateway_ip)
+        target_ip,gateway_ip,packet_count=web_input.split(':')
+        arp_poisoning(target_ip,gateway_ip,packet_count)
+        
         
         return render_template('arp_spoofing.html')
+
+
+@app.route('/ctf',methods=['GET'])
+def ctf():
+    return render_template('ctf.html')
+    
     
 if __name__ == '__main__':
     app.run(port=5000, debug=True)

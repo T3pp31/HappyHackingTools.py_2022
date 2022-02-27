@@ -232,11 +232,10 @@ def reset_target(gateway_ip,gateway_mac,target_ip,target_mac):
     send(ARP(op=2,psrc=gateway_ip,pdst=target_ip,hwdst='ff:ff:ff:ff:ff:ff',hwsrc=gateway_mac),count=5)
     send(ARP(op=2,psrc=target_ip,pdst=gateway_ip,hwdst='ff:ff:ff:ff:ff:ff',hwsrc=target_mac),count=5)
     
-def arp_poisoning(target_ip,gateway_ip):
+def arp_poisoning(target_ip,gateway_ip,packet_count=200):
     host_ip=get_own_ip()
     interface='en0'
-    
-    packet_count=200
+    packet_count=int(packet_count)
     conf.iface=interface
     conf.verb=0
     

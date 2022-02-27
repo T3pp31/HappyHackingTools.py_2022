@@ -5,7 +5,10 @@
 <h3>macアドレスを偽装して盗聴をします.</h3>
 
 <p>以下のように入力します</p>
-<p>target_ip:gateway_ip</p>
+<p>ターゲットIP:ゲートウェイIP(ルータIP):取得するパケットの数</p>
+<p>target_ip:gateway_ip,packetcount</p>
 <form action="/arp_spoofing" method="POST" enctype="multipart/form-data">
     <input type="text" name="web_input">
     <input type="submit" value="送信">
+
+<p>pcapファイルはfileに保存されています．</p>
