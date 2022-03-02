@@ -5,6 +5,7 @@ from hackingtools import get_own_ip, lan_scan,port_scan,get_own_ip,arp_poisoning
 import pandas as pd
 import webbrowser
 import os
+from scapy.all import *
 
 
 app = Flask(__name__, static_folder='.', static_url_path='')
@@ -77,7 +78,19 @@ def spoofing():
 @app.route('/ctf',methods=['GET'])
 def ctf():
     return render_template('ctf.html')
+
+@app.route('/send_packet',methods=['GET','POST'])
+def send_packet():
+    p=request.form.get('radio')
+    
+    if p==1:
+        
+    
+    
+    return render_template('send_packet.html')
     
     
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
+    
+    
