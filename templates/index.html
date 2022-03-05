@@ -1,9 +1,14 @@
 <title>HappyHackingTools</title>
 <h1>HappyHackingTools</h1>
 
-{% if result %}
-<h2>あなたのアドレス:{{ result }}</h2>
+{% if ip %}
+<h2>あなたのアドレス:{{ ip }}</h2>
 {% endif %}
+
+{% if broadcast %}
+<h2>ブロードキャストアドレス:{{broadcast}}</h2>
+{% endif %}
+
 <h2><a href='/lanscan'>LanScan</a></h2>
 <h2><a href='/portscan'>PortScan</a></h2>
 <h2><a href='/binary'>Binary解析</a></h2>

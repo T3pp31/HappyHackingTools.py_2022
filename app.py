@@ -1,7 +1,7 @@
 
 import mimetypes
 from flask import Flask, render_template,request,redirect,send_file
-from hackingtools import get_own_ip, lan_scan,port_scan,get_own_ip,arp_poisoning
+from hackingtools import get_own_ip, lan_scan,port_scan,get_own_ip,arp_poisoning,get_broadcastaddr
 import pandas as pd
 import webbrowser
 import os
@@ -12,8 +12,9 @@ app = Flask(__name__, static_folder='.', static_url_path='')
 
 @app.route('/')
 def show():
-    result = get_own_ip()
-    return render_template('index.html',result=result)
+    ip = get_own_ip()
+    broadcast=get_broadcastaddr()
+    return render_template('index.html',ip=ip,broadcast=broadcast)
 
 @app.route('/lanscan',methods = ['GET','POST'])
 def flask_lanscan():
@@ -84,7 +85,7 @@ def send_packet():
     p=request.form.get('radio')
     
     if p==1:
-        
+        a=a
     
     
     return render_template('send_packet.html')

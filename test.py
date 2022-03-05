@@ -1,4 +1,5 @@
 import netifaces
+from scapy.all import *
 
 def get_broadcastaddr():
     broadcastaddr=netifaces.ifaddresses('en0')[netifaces.AF_INET][0]['broadcast']
@@ -9,6 +10,4 @@ def get_own_ip():
     return ip
 
 if __name__=='__main__':
-    print(get_broadcastaddr())
-    
-#broadcastアドレスを計算で求め，ブロードキャストにICMPを投げることでIPMACなどを取得する予定
+    print(netifaces.ifaddresses('en0')[netifaces.AF_INET][0])

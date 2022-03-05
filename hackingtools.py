@@ -21,6 +21,9 @@ def get_own_ip():
     ip = netifaces.ifaddresses('en0')[netifaces.AF_INET][0]['addr']
     return ip
 
+def get_broadcastaddr():
+    broadcastaddr=netifaces.ifaddresses('en0')[netifaces.AF_INET][0]['broadcast']
+    return broadcastaddr
 
 # IPアドレスのネットワーク部を特定する．
 def get_network_part(my_ipaddr):
