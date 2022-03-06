@@ -19,14 +19,18 @@ def show():
 @app.route('/lanscan',methods = ['GET','POST'])
 def flask_lanscan():
     if request.method == 'GET':
-        return render_template('lanscan.html')
+        ip=get_own_ip()
+        broadcast=get_broadcastaddr()
+        return render_template('lanscan.html',ip=ip,broadcast=broadcast)
     try:
         if request.method == 'POST':
+            ip=get_own_ip()
+            broadcast=get_broadcastaddr()
             web_input=request.form.get('web_input')
             start,end=web_input.split(',')
             lanscan_result = lan_scan(start,end)
         
-            return render_template('lanscan.html'),webbrowser.open_new_tab('http://127.0.0.1:5000/lanscan_result')
+            return render_template('lanscan.html',ip=ip,broadcast=broadcast),webbrowser.open_new_tab('http://127.0.0.1:5000/lanscan_result')
     except:
         return render_template('lanscan.html')
     

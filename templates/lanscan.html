@@ -1,6 +1,12 @@
 <title>LanScan</title>
 <h1><a href='/'>HappyHackingTools</a></h1>
+{% if ip %}
+<h2>あなたのアドレス:{{ ip }}</h2>
+{% endif %}
 
+{% if broadcast %}
+<h2>ブロードキャストアドレス:{{broadcast}}</h2>
+{% endif %}
 
 <h2>LanScan<h2>
     <body>
