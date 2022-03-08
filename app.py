@@ -84,15 +84,6 @@ def spoofing():
 def ctf():
     return render_template('ctf.html')
 
-@app.route('/send_packet',methods=['GET','POST'])
-def send_packet():
-    p=request.form.get('radio')
-    
-    if p==1:
-        a=a
-    
-    
-    return render_template('send_packet.html')
     
     
 if __name__ == '__main__':
