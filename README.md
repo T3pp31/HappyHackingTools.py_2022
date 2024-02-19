@@ -14,10 +14,13 @@ The owner of this repository assumes no responsibility whatsoever.
 
 # 動作環境
 
-## ※Docker調整中
+## poetryを使う場合
 
-Dockerfileを用意していますが，そのままだと自分の属するセグメント内に存在するデバイスを探すことはできないです．そのための設定が以下のURL
-<https://qiita.com/Meganezaru@github/items/69f406844532d731d370>
+```
+poetry run python app.py
+```
+
+で利用可能．
 
 ## 環境を用意する場合
 
