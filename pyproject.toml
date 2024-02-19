@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "happyhackingtools-py-2022"
+version = "0.1.0"
+description = ""
+authors = ["Fu-Te <37261985+T3pp31@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{include = "happyhackingtools"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
