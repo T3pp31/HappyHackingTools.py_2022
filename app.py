@@ -6,13 +6,8 @@ import pandas as pd
 from flask import Flask, redirect, render_template, request, send_file
 from scapy.all import *
 
-from hackingtools import (
-    arp_poisoning,
-    get_broadcastaddr,
-    get_own_ip,
-    lan_scan,
-    port_scan,
-)
+from hackingtools import (arp_poisoning, get_broadcastaddr, get_own_ip,
+                          lan_scan, port_scan)
 
 app = Flask(__name__, static_folder=".", static_url_path="")
 
@@ -36,7 +31,7 @@ def flask_lanscan():
             broadcast = get_broadcastaddr()
             web_input = request.form.get("web_input")
             start, end = web_input.split(",")
-            lanscan_result = lan_scan(start, end)
+            lan_scan(start, end)
 
             return render_template(
                 "lanscan.html", ip=ip, broadcast=broadcast

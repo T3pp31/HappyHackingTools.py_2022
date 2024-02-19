@@ -178,6 +178,7 @@ def lan_scan(start=0, end=255):
     df = make_df(
         ip_addr_list, mac_addr_list, host_list, vendor_list, vendor_address
     )
+    df.to_html('templates/result.html')
     print(df.head())
 
 
