@@ -3,9 +3,10 @@ services:
   python3:
     restart: always
     build: .
-    command: python3 HappyHackingTools.py_2022/app.py
     container_name: 'python3'
-    working_dir: '/root/'
+    working_dir: '/code/'
     tty: true
     volumes:
-      - ./opt:/root/opt
+      - ../:/code/
+    ports:
+      - 8000:8000
