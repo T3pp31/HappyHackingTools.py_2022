@@ -1,6 +1,0 @@
-scapy
-netifaces
-pandas
-numpy
-tqdm
-flask
