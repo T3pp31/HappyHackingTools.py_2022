@@ -61,3 +61,13 @@ NTP増幅攻撃
 Smurf攻撃
 ICMP Flood攻撃
 リプレイ攻撃
+
+# pyenv
+
+```Powershell
+pyenv install 3.9.7 #Python3.9.7のインストール
+pyenv local 3.9.7 ローカルリポジトリのパイソンバージョン指定
+python -m venv myenv #myenvの作成
+.\myenv\Scripts\activate #仮想環境の起動
+pip install -r requirements.txt #必要なパッケージのインストール
+```
