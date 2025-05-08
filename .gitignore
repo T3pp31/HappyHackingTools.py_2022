@@ -4,3 +4,4 @@ templates/result.html
 __pycache__
 .DS_Store
 file/arper.pcap
+*/__pycache__
