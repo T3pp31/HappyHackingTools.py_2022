@@ -1,0 +1,16 @@
+[scan]
+arp_timeout_ms = 100
+arp_retry_count = 10
+port_scan_timeout_ms = 1000
+port_scan_concurrency = 200
+sniff_timeout_sec = 300
+poison_interval_sec = 2
+reset_packet_count = 5
+
+[vendor]
+api_url = "http://macvendors.co/api/"
+use_local_oui = true
+api_timeout_ms = 3000
+
+[paths]
+pcap_output_dir = "captured"

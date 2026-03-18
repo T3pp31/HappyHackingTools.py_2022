@@ -1,0 +1,53 @@
+.sidebar {
+  width: 220px;
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+}
+
+.logo {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.logo h2 {
+  color: var(--accent);
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+
+.navList {
+  list-style: none;
+  padding: 8px 0;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+
+.navLink:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.active {
+  color: var(--accent);
+  background-color: var(--bg-tertiary);
+  border-left: 3px solid var(--accent);
+}
+
+.icon {
+  font-size: 16px;
+  width: 24px;
+  text-align: center;
+}

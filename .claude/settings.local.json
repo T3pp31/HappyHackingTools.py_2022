@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "WebSearch",
+      "WebFetch(*)",
+      "mcp__*",
+      "mcp__kaggle__search_competition_submissions",
+      "mcp__kaggle__get_notebook_session_status",
+      "mcp__kaggle__get_competition_submission",
+      "mcp__kaggle__list_notebook_session_output",
+      "mcp__kaggle__create_code_competition_submission",
+      "mcp__kaggle__get_notebook_info",
+      "mcp__kaggle__search_notebooks",
+      "mcp__kaggle__get_dataset_status",
+      "mcp__kaggle__list_notebook_files",
+      "mcp__kaggle__list_dataset_files",
+      "mcp__kaggle__get_competition_leaderboard",
+      "mcp__kaggle__get_competition",
+      "mcp__kaggle__search_competitions",
+      "mcp__kaggle__get_competition_data_files_summary",
+      "mcp__kaggle__list_competition_data_files",
+      "mcp__kaggle__download_competition_data_file",
+      "mcp__kaggle__list_forum_topics",
+      "mcp__kaggle__get_forum_topic",
+      "mcp__kaggle__get_writeup_by_topic",
+      "mcp__plugin_serena_serena__list_dir",
+      "mcp__plugin_context7_context7__query-docs"
+    ],
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(rm -rf:*)"
+    ]
+  }
+}
