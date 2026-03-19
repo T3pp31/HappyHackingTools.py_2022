@@ -1,6 +1,6 @@
 use std::net::Ipv4Addr;
 
-use pnet::packet::arp::{ArpHardwareTypes, ArpOperations, MutableArpPacket};
+use pnet::packet::arp::{ArpHardwareTypes, ArpOperation, ArpOperations, MutableArpPacket};
 use pnet::packet::ethernet::{EtherTypes, MutableEthernetPacket};
 use pnet::packet::MutablePacket;
 use pnet::util::MacAddr;
@@ -26,7 +26,7 @@ pub fn find_interface(name: &str) -> Result<NetworkInterface, AppError> {
 /// For ARP Request: destination MAC is BROADCAST_MAC and target hardware address is zero.
 /// For ARP Reply: destination MAC is target_mac and target hardware address is target_mac.
 pub fn build_arp_packet(
-    operation: ArpOperations,
+    operation: ArpOperation,
     sender_mac: MacAddr,
     sender_ip: Ipv4Addr,
     target_mac: MacAddr,
