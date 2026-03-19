@@ -10,13 +10,16 @@ use tokio::sync::Mutex;
 
 pub struct AppState {
     pub config: AppConfig,
+    pub http_client: reqwest::Client,
     pub arp_spoof_running: Arc<Mutex<bool>>,
 }
 
 pub fn run() {
     let config = AppConfig::load().unwrap_or_default();
+    let http_client = reqwest::Client::new();
     let state = AppState {
         config,
+        http_client,
         arp_spoof_running: Arc::new(Mutex::new(false)),
     };
 

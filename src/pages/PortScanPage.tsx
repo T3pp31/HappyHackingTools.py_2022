@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { useTauriCommand } from "../hooks/useTauriCommand";
 import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { ErrorMessage } from "../components/common/ErrorMessage";
+import { inputStyle, buttonStyle, labelStyle } from "../styles/formStyles";
+import { PORT_SCAN_DEFAULTS } from "../config/defaults";
 import type { PortScanResult } from "../types";
 
 export const PortScanPage: React.FC = () => {
-  const [ip, setIp] = useState("127.0.0.1");
-  const [portStart, setPortStart] = useState("0");
-  const [portEnd, setPortEnd] = useState("1024");
+  const [ip, setIp] = useState(PORT_SCAN_DEFAULTS.targetIp);
+  const [portStart, setPortStart] = useState(PORT_SCAN_DEFAULTS.portStart);
+  const [portEnd, setPortEnd] = useState(PORT_SCAN_DEFAULTS.portEnd);
   const { data, loading, error, execute } =
     useTauriCommand<PortScanResult>("port_scan");
 
@@ -28,7 +30,7 @@ export const PortScanPage: React.FC = () => {
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "20px", alignItems: "end" }}>
         <div>
-          <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>
+          <label style={labelStyle}>
             Target IP
           </label>
           <input
@@ -39,7 +41,7 @@ export const PortScanPage: React.FC = () => {
           />
         </div>
         <div>
-          <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>
+          <label style={labelStyle}>
             Port Start
           </label>
           <input
@@ -52,7 +54,7 @@ export const PortScanPage: React.FC = () => {
           />
         </div>
         <div>
-          <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>
+          <label style={labelStyle}>
             Port End
           </label>
           <input
@@ -102,27 +104,4 @@ export const PortScanPage: React.FC = () => {
       )}
     </div>
   );
-};
-
-const inputStyle: React.CSSProperties = {
-  padding: "8px 12px",
-  backgroundColor: "var(--bg-tertiary)",
-  border: "1px solid var(--border)",
-  borderRadius: "var(--radius)",
-  color: "var(--text-primary)",
-  fontSize: "13px",
-  width: "100px",
-  fontFamily: "inherit",
-};
-
-const buttonStyle: React.CSSProperties = {
-  padding: "8px 24px",
-  backgroundColor: "var(--accent)",
-  border: "none",
-  borderRadius: "var(--radius)",
-  color: "#000",
-  fontSize: "13px",
-  fontWeight: 600,
-  cursor: "pointer",
-  fontFamily: "inherit",
 };

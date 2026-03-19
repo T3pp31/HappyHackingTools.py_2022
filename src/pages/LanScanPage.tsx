@@ -3,6 +3,8 @@ import { useTauriCommand } from "../hooks/useTauriCommand";
 import { DataTable } from "../components/common/DataTable";
 import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { ErrorMessage } from "../components/common/ErrorMessage";
+import { inputStyle, buttonStyle, labelStyle } from "../styles/formStyles";
+import { LAN_SCAN_DEFAULTS } from "../config/defaults";
 import type { DeviceInfo } from "../types";
 
 const COLUMNS = [
@@ -13,8 +15,8 @@ const COLUMNS = [
 ];
 
 export const LanScanPage: React.FC = () => {
-  const [start, setStart] = useState("0");
-  const [end, setEnd] = useState("255");
+  const [start, setStart] = useState(LAN_SCAN_DEFAULTS.startHost);
+  const [end, setEnd] = useState(LAN_SCAN_DEFAULTS.endHost);
   const { data, loading, error, execute } =
     useTauriCommand<DeviceInfo[]>("lan_scan");
 
@@ -31,7 +33,7 @@ export const LanScanPage: React.FC = () => {
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "20px", alignItems: "end" }}>
         <div>
-          <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>
+          <label style={labelStyle}>
             Start
           </label>
           <input
@@ -44,7 +46,7 @@ export const LanScanPage: React.FC = () => {
           />
         </div>
         <div>
-          <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>
+          <label style={labelStyle}>
             End
           </label>
           <input
@@ -66,27 +68,4 @@ export const LanScanPage: React.FC = () => {
       {data && <DataTable columns={COLUMNS} data={data} />}
     </div>
   );
-};
-
-const inputStyle: React.CSSProperties = {
-  padding: "8px 12px",
-  backgroundColor: "var(--bg-tertiary)",
-  border: "1px solid var(--border)",
-  borderRadius: "var(--radius)",
-  color: "var(--text-primary)",
-  fontSize: "13px",
-  width: "100px",
-  fontFamily: "inherit",
-};
-
-const buttonStyle: React.CSSProperties = {
-  padding: "8px 24px",
-  backgroundColor: "var(--accent)",
-  border: "none",
-  borderRadius: "var(--radius)",
-  color: "#000",
-  fontSize: "13px",
-  fontWeight: 600,
-  cursor: "pointer",
-  fontFamily: "inherit",
 };

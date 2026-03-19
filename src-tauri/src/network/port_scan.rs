@@ -75,8 +75,8 @@ pub async fn scan(
                 open_ports.push(port);
             }
 
-            // Emit progress every 100 ports to avoid flooding
-            if completed % 100 == 0 || completed == total {
+            // Emit progress at configured interval to avoid flooding
+            if completed % config.scan.progress_report_interval == 0 || completed == total {
                 let _ = window.emit(
                     "scan-progress",
                     serde_json::json!({
