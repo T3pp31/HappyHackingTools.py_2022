@@ -1,5 +1,5 @@
 {
-  "id": "ttyn4519/birdclef2026-public-blend-4-model",
+  "id": "ttyn4519/birdclef-2026-public-blend-4-model",
   "title": "BirdCLEF 2026 Public Blend 4-Model",
   "code_file": "birdclef2026-public-blend-4-model.ipynb",
   "language": "python",
@@ -14,5 +14,6 @@
     "ttyn4519/sed-eca-nfnet-l0-models",
     "ttyn4519/onnxruntime-wheel"
   ],
-  "kernel_sources": []
+  "kernel_sources": [],
+  "competition": "birdclef-2026"
 }
