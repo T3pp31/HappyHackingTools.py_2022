@@ -1,0 +1,18 @@
+{
+  "id": "ttyn4519/birdclef2026-public-blend-4-model",
+  "title": "BirdCLEF 2026 Public Blend 4-Model",
+  "code_file": "birdclef2026-public-blend-4-model.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_internet": false,
+  "competition_sources": ["birdclef-2026"],
+  "dataset_sources": [
+    "tonylica/birdclef-2026-model",
+    "ttyn4519/sed-effnetv2-b3-models",
+    "ttyn4519/sed-eca-nfnet-l0-models",
+    "ttyn4519/onnxruntime-wheel"
+  ],
+  "kernel_sources": []
+}
