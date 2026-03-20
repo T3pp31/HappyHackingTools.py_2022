@@ -57,17 +57,16 @@ jobs:
         run: |
           brew install libpcap
 
-      - name: Install Windows dependencies
+      - name: Install Windows dependencies (Npcap SDK)
         if: matrix.target == 'windows'
         shell: powershell
         run: |
-          $wpcapUrl = "https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip"
-          $zipPath = "$env:TEMP\WpdPack.zip"
-          $extractPath = "$env:TEMP\WpdPack"
-          Invoke-WebRequest -Uri $wpcapUrl -OutFile $zipPath
+          $sdkUrl = "https://npcap.com/dist/npcap-sdk-1.13.zip"
+          $zipPath = "$env:TEMP\npcap-sdk.zip"
+          $extractPath = "C:\npcap-sdk"
+          Invoke-WebRequest -Uri $sdkUrl -OutFile $zipPath
           Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
-          $libDir = "$extractPath\WpdPack\Lib\x64"
-          echo "LIB=$libDir;$env:LIB" >> $env:GITHUB_ENV
+          echo "NPCAP_SDK_DIR=$extractPath" >> $env:GITHUB_ENV
 
       - name: Install frontend dependencies
         run: npm ci
