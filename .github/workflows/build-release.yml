@@ -66,16 +66,13 @@ jobs:
           $extractPath = "C:\npcap-sdk"
           Invoke-WebRequest -Uri $sdkUrl -OutFile $zipPath
           Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
-          echo "NPCAP_SDK_DIR=$extractPath" >> $env:GITHUB_ENV
+          echo "LIB=$extractPath\Lib\x64" >> $env:GITHUB_ENV
 
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Install Tauri CLI
-        run: npm install -g @tauri-apps/cli@latest
-
       - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v0.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
