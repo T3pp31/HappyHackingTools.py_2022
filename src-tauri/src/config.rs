@@ -17,6 +17,8 @@ pub struct ScanConfig {
     pub sniff_timeout_sec: u64,
     pub poison_interval_sec: u64,
     pub reset_packet_count: u32,
+    pub progress_report_interval: u32,
+    pub lan_scan_arp_retry_count: u32,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -24,11 +26,13 @@ pub struct VendorConfig {
     pub api_url: String,
     pub use_local_oui: bool,
     pub api_timeout_ms: u64,
+    pub user_agent: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct PathsConfig {
     pub pcap_output_dir: String,
+    pub pcap_filename: String,
 }
 
 impl AppConfig {
@@ -65,14 +69,18 @@ impl Default for AppConfig {
                 sniff_timeout_sec: 300,
                 poison_interval_sec: 2,
                 reset_packet_count: 5,
+                progress_report_interval: 100,
+                lan_scan_arp_retry_count: 1,
             },
             vendor: VendorConfig {
                 api_url: "http://macvendors.co/api/".to_string(),
                 use_local_oui: true,
                 api_timeout_ms: 3000,
+                user_agent: "API Browser".to_string(),
             },
             paths: PathsConfig {
                 pcap_output_dir: "captured".to_string(),
+                pcap_filename: "arper.pcap".to_string(),
             },
         }
     }

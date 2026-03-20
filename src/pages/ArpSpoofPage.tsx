@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { useArpSpoof } from "../hooks/useArpSpoof";
 import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { ErrorMessage } from "../components/common/ErrorMessage";
+import { inputStyle, buttonStyle, labelStyle, dangerButtonStyle } from "../styles/formStyles";
+import { ARP_SPOOF_DEFAULTS } from "../config/defaults";
 
 export const ArpSpoofPage: React.FC = () => {
   const [targetIp, setTargetIp] = useState("");
   const [gatewayIp, setGatewayIp] = useState("");
-  const [packetCount, setPacketCount] = useState("200");
+  const [packetCount, setPacketCount] = useState(ARP_SPOOF_DEFAULTS.packetCount);
   const { start, stop, startResult, stopResult, status } = useArpSpoof();
 
   const handleStart = () => {
@@ -54,10 +56,10 @@ export const ArpSpoofPage: React.FC = () => {
             style={inputStyle}
           />
         </div>
-        <button onClick={handleStart} disabled={isLoading} style={startBtnStyle}>
+        <button onClick={handleStart} disabled={isLoading} style={buttonStyle}>
           Start
         </button>
-        <button onClick={() => stop()} disabled={isLoading} style={stopBtnStyle}>
+        <button onClick={() => stop()} disabled={isLoading} style={dangerButtonStyle}>
           Stop
         </button>
       </div>
@@ -82,46 +84,4 @@ export const ArpSpoofPage: React.FC = () => {
       )}
     </div>
   );
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "12px",
-  color: "var(--text-secondary)",
-  marginBottom: "4px",
-};
-
-const inputStyle: React.CSSProperties = {
-  padding: "8px 12px",
-  backgroundColor: "var(--bg-tertiary)",
-  border: "1px solid var(--border)",
-  borderRadius: "var(--radius)",
-  color: "var(--text-primary)",
-  fontSize: "13px",
-  width: "100px",
-  fontFamily: "inherit",
-};
-
-const startBtnStyle: React.CSSProperties = {
-  padding: "8px 24px",
-  backgroundColor: "var(--accent)",
-  border: "none",
-  borderRadius: "var(--radius)",
-  color: "#000",
-  fontSize: "13px",
-  fontWeight: 600,
-  cursor: "pointer",
-  fontFamily: "inherit",
-};
-
-const stopBtnStyle: React.CSSProperties = {
-  padding: "8px 24px",
-  backgroundColor: "var(--danger)",
-  border: "none",
-  borderRadius: "var(--radius)",
-  color: "#fff",
-  fontSize: "13px",
-  fontWeight: 600,
-  cursor: "pointer",
-  fontFamily: "inherit",
 };

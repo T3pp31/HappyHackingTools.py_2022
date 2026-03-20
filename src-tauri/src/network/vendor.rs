@@ -7,6 +7,7 @@ use crate::error::AppError;
 pub async fn lookup_vendor(
     mac: &str,
     config: &VendorConfig,
+    client: &reqwest::Client,
 ) -> Result<Option<String>, AppError> {
     if mac.is_empty() {
         return Ok(None);
@@ -15,14 +16,10 @@ pub async fn lookup_vendor(
     let url = format!("{}{}", config.api_url, mac);
     let timeout = Duration::from_millis(config.api_timeout_ms);
 
-    let client = reqwest::Client::builder()
-        .timeout(timeout)
-        .build()
-        .map_err(|e| AppError::Network(format!("HTTP client error: {}", e)))?;
-
     let response = match client
         .get(&url)
-        .header("User-Agent", "API Browser")
+        .header("User-Agent", &config.user_agent)
+        .timeout(timeout)
         .send()
         .await
     {

@@ -12,6 +12,7 @@ pub async fn scan(
     start: u8,
     end: u8,
     config: &AppConfig,
+    client: &reqwest::Client,
     window: &Window,
 ) -> Result<Vec<DeviceInfo>, AppError> {
     let net_info = interface::get_active_network_info()?;
@@ -56,12 +57,12 @@ pub async fn scan(
             &target_str,
             interface_name,
             config.scan.arp_timeout_ms,
-            1, // Single attempt per IP for speed
+            config.scan.lan_scan_arp_retry_count,
         )?;
 
         if let Some(ref mac_addr) = mac {
             let hostname = lookup_hostname(&target_str);
-            let vendor_name = vendor::lookup_vendor(mac_addr, &config.vendor)
+            let vendor_name = vendor::lookup_vendor(mac_addr, &config.vendor, client)
                 .await
                 .unwrap_or(None);
 
