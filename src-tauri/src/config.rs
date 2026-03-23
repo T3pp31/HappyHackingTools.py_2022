@@ -1,6 +1,9 @@
 use serde::Deserialize;
 use std::path::PathBuf;
 
+/// Npcap ダウンロードページの URL
+pub const NPCAP_DOWNLOAD_URL: &str = "https://npcap.com/#download";
+
 #[derive(Debug, Deserialize, Clone)]
 pub struct AppConfig {
     pub scan: ScanConfig,

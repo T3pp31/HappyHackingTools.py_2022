@@ -89,7 +89,19 @@ fn configure_npcap_link_search() {
 #[cfg(not(target_os = "windows"))]
 fn configure_npcap_link_search() {}
 
+/// Windows: wpcap.dll を遅延ロードに設定し、未インストール時もアプリが起動できるようにする
+#[cfg(target_os = "windows")]
+fn configure_delay_load() {
+    println!("cargo:rustc-link-arg=/DELAYLOAD:wpcap.dll");
+    println!("cargo:rustc-link-lib=delayimp");
+}
+
+/// Linux / macOS では遅延ロード設定は不要
+#[cfg(not(target_os = "windows"))]
+fn configure_delay_load() {}
+
 fn main() {
     configure_npcap_link_search();
+    configure_delay_load();
     tauri_build::build();
 }

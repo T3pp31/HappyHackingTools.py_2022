@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useArpSpoof } from "../hooks/useArpSpoof";
+import { useNpcapCheck } from "../hooks/useNpcapCheck";
 import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { ErrorMessage } from "../components/common/ErrorMessage";
+import { NpcapDialog } from "../components/common/NpcapDialog";
 import { inputStyle, buttonStyle, labelStyle, dangerButtonStyle } from "../styles/formStyles";
 import { ARP_SPOOF_DEFAULTS } from "../config/defaults";
 
@@ -10,9 +12,13 @@ export const ArpSpoofPage: React.FC = () => {
   const [gatewayIp, setGatewayIp] = useState("");
   const [packetCount, setPacketCount] = useState(ARP_SPOOF_DEFAULTS.packetCount);
   const { start, stop, startResult, stopResult, status } = useArpSpoof();
+  const { showDialog, downloadUrl, checkAndExecute, closeDialog } =
+    useNpcapCheck();
 
   const handleStart = () => {
-    start(targetIp, gatewayIp, Number(packetCount));
+    checkAndExecute(() => {
+      start(targetIp, gatewayIp, Number(packetCount));
+    });
   };
 
   const isLoading = startResult.loading || stopResult.loading;
@@ -82,6 +88,11 @@ export const ArpSpoofPage: React.FC = () => {
           )}
         </div>
       )}
+      <NpcapDialog
+        visible={showDialog}
+        downloadUrl={downloadUrl}
+        onClose={closeDialog}
+      />
     </div>
   );
 };

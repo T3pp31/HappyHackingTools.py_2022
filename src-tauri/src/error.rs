@@ -18,6 +18,9 @@ pub enum AppError {
     #[error("ARP spoof error: {0}")]
     ArpSpoof(String),
 
+    #[error("Npcap is not installed. Please install Npcap from {0}")]
+    NpcapNotFound(String),
+
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 }

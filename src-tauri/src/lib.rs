@@ -26,6 +26,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_shell::init())
         .manage(state)
         .invoke_handler(tauri::generate_handler![
             commands::network_info::get_network_info,
@@ -35,6 +36,7 @@ pub fn run() {
             commands::arp_spoof::stop_arp_spoof,
             commands::arp_spoof::get_arp_spoof_status,
             commands::binary::read_binary_file,
+            commands::npcap::check_npcap,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

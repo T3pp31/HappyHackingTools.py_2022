@@ -12,3 +12,5 @@ export const PORT_SCAN_DEFAULTS = {
 export const ARP_SPOOF_DEFAULTS = {
   packetCount: "200",
 };
+
+export const NPCAP_DOWNLOAD_URL = "https://npcap.com/#download";

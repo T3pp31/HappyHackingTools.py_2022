@@ -1,6 +1,7 @@
 use serde::Serialize;
 use tauri::Window;
 
+use crate::config::NPCAP_DOWNLOAD_URL;
 use crate::error::AppError;
 use crate::AppState;
 
@@ -19,5 +20,8 @@ pub async fn lan_scan(
     state: tauri::State<'_, AppState>,
     window: Window,
 ) -> Result<Vec<DeviceInfo>, AppError> {
+    if !crate::network::npcap::is_npcap_available() {
+        return Err(AppError::NpcapNotFound(NPCAP_DOWNLOAD_URL.to_string()));
+    }
     crate::network::lan_scan::scan(start, end, &state.config, &state.http_client, &window).await
 }

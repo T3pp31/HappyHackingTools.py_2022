@@ -35,24 +35,26 @@ pub fn get_active_network_info() -> Result<NetworkInfo, AppError> {
         }
     }
 
-    // Fallback: iterate pnet_datalink interfaces
-    for iface in pnet_datalink::interfaces() {
-        for ip_net in &iface.ips {
-            if let std::net::IpAddr::V4(ipv4) = ip_net.ip() {
-                if ipv4 == Ipv4Addr::LOCALHOST || ipv4.is_loopback() {
-                    continue;
-                }
-                let prefix = ip_net.prefix();
-                let network = Ipv4Network::new(ipv4, prefix)
-                    .map_err(|e| AppError::Network(format!("Invalid network: {}", e)))?;
+    // Fallback: iterate pnet_datalink interfaces (requires Npcap on Windows)
+    if crate::network::npcap::is_npcap_available() {
+        for iface in pnet_datalink::interfaces() {
+            for ip_net in &iface.ips {
+                if let std::net::IpAddr::V4(ipv4) = ip_net.ip() {
+                    if ipv4 == Ipv4Addr::LOCALHOST || ipv4.is_loopback() {
+                        continue;
+                    }
+                    let prefix = ip_net.prefix();
+                    let network = Ipv4Network::new(ipv4, prefix)
+                        .map_err(|e| AppError::Network(format!("Invalid network: {}", e)))?;
 
-                return Ok(NetworkInfo {
-                    ip_address: ipv4.to_string(),
-                    broadcast_address: network.broadcast().to_string(),
-                    interface_name: iface.name.clone(),
-                    subnet_mask: network.mask().to_string(),
-                    gateway: None,
-                });
+                    return Ok(NetworkInfo {
+                        ip_address: ipv4.to_string(),
+                        broadcast_address: network.broadcast().to_string(),
+                        interface_name: iface.name.clone(),
+                        subnet_mask: network.mask().to_string(),
+                        gateway: None,
+                    });
+                }
             }
         }
     }
