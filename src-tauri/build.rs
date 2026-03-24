@@ -93,6 +93,7 @@ fn configure_npcap_link_search() {}
 #[cfg(target_os = "windows")]
 fn configure_delay_load() {
     println!("cargo:rustc-link-arg=/DELAYLOAD:wpcap.dll");
+    println!("cargo:rustc-link-arg=/DELAYLOAD:Packet.dll");
     println!("cargo:rustc-link-lib=delayimp");
 }
 
