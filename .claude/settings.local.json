@@ -25,7 +25,9 @@
       "mcp__kaggle__get_forum_topic",
       "mcp__kaggle__get_writeup_by_topic",
       "mcp__plugin_serena_serena__list_dir",
-      "mcp__plugin_context7_context7__query-docs"
+      "mcp__plugin_context7_context7__query-docs",
+      "mcp__plugin_serena_serena__activate_project",
+      "mcp__plugin_serena_serena__read_file"
     ],
     "deny": [
       "Bash(rm:*)",
