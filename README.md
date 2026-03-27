@@ -1,73 +1,162 @@
-# happyhackingtools
+# HappyHackingTools
 
-ペネトレーションツールを目指して作っているものです．
-Pythonのバージョンは3.9
-Poetryを使用しています
+ネットワークセキュリティツールキットのデスクトップアプリケーションです。
+ペネトレーションテストやCTFの学習・実践を目的として開発しています。
 
-# 注意事項
+A desktop network security toolkit built with Rust + Tauri v2 and React/TypeScript frontend, designed for penetration testing and CTF practice.
 
-ペネトレーション，CTF目的に作成しているので，第三者に対する攻撃に使用しないようにしてください．
-本レポジトリ所有者はいかなる責任も負いません．
+## 注意事項 / Disclaimer
 
-It is designed for penetration and CTF purposes, and should not be used for attacks against third parties.
+ペネトレーション・CTF目的に作成しているので、第三者に対する攻撃に使用しないようにしてください。
+本レポジトリ所有者はいかなる責任も負いません。
+
+This tool is designed for penetration testing and CTF purposes only, and must not be used for attacks against third parties.
 The owner of this repository assumes no responsibility whatsoever.
 
-# 動作環境
+## 技術スタック
 
-## poetryを使う場合
+| カテゴリ | 技術 |
+|---------|------|
+| バックエンド | Rust (Edition 2021, MSRV 1.77.2) |
+| フレームワーク | Tauri v2 |
+| フロントエンド | React 18 + TypeScript 5.6 |
+| ビルドツール | Vite 5 |
+| ルーティング | React Router v7 |
+| テスト | Vitest + Testing Library + happy-dom |
+| パケットキャプチャ | pnet / pcap (Npcap SDK) |
+| 設定管理 | TOML |
+
+## 機能一覧
+
+| 機能 | 説明 |
+|------|------|
+| LAN スキャン | ARP を使用したローカルネットワーク内のホスト検出、ベンダー情報の取得 |
+| ポートスキャン | 指定ホストのオープンポート検出 |
+| ARP スプーフィング | ARP テーブルのポイズニングとパケットスニッフィング |
+| バイナリビューア | ファイルのバイナリ表示 |
+| CTF ツール | CTF 向けユーティリティ |
+| ネットワーク情報 | ネットワークインターフェース情報の表示 |
+
+## ディレクトリ構成
 
 ```
-poetry run python app.py
+HappyHackingTools.py_2022/
+├── src/                          # フロントエンド (React/TypeScript)
+│   ├── components/               # UI コンポーネント
+│   │   ├── ArpSpoof/
+│   │   ├── Binary/
+│   │   ├── Ctf/
+│   │   ├── LanScan/
+│   │   ├── Layout/
+│   │   ├── PortScan/
+│   │   └── common/
+│   ├── pages/                    # ページコンポーネント
+│   ├── config/                   # フロントエンド設定 (defaults.ts)
+│   ├── hooks/                    # カスタム React フック
+│   ├── types/                    # TypeScript 型定義
+│   └── styles/                   # スタイルシート
+├── src-tauri/                    # バックエンド (Rust/Tauri)
+│   ├── src/
+│   │   ├── commands/             # Tauri コマンド (IPC ハンドラ)
+│   │   ├── network/              # ネットワーク処理モジュール
+│   │   ├── utils/                # ユーティリティ (バイナリ処理等)
+│   │   ├── config.rs             # アプリケーション設定
+│   │   ├── error.rs              # エラー型定義
+│   │   ├── lib.rs                # Tauri アプリケーション初期化
+│   │   └── main.rs               # エントリポイント
+│   ├── config/
+│   │   └── default.toml          # デフォルト設定ファイル
+│   ├── capabilities/             # Tauri v2 権限設定
+│   └── tauri.conf.json           # Tauri 設定
+├── tests/                        # フロントエンドテスト (Vitest)
+├── scripts/                      # ビルドスクリプト
+│   └── setup-npcap-sdk.ps1       # Npcap SDK セットアップ
+├── package.json
+├── vite.config.ts
+├── vitest.config.ts
+└── tsconfig.json
 ```
 
-で利用可能．
+## 動作環境
 
-## 環境を用意する場合
+### 必須要件
 
-Python3.9.7で動作確認済
+- **Node.js** (npm が利用可能であること)
+- **Rust** (Edition 2021, MSRV 1.77.2 以上)
+- **Npcap** (Windows でパケットキャプチャ機能を使用する場合)
+  - Npcap 本体: https://npcap.com/#download
+  - Npcap SDK: ビルド時に必要
 
-必要なパッケージのインストール
+### Npcap SDK のセットアップ (Windows)
 
+Npcap SDK は以下のいずれかの方法で配置してください。
+
+1. 環境変数 `NPCAP_SDK_DIR` に SDK ルートディレクトリを設定する
+2. 以下のいずれかのパスに配置する:
+   - `C:\npcap-sdk\Lib\x64`
+   - `C:\Program Files\Npcap SDK\Lib\x64`
+   - `%USERPROFILE%\.npcap-sdk\Lib\x64`
+
+または、付属のセットアップスクリプトを使用できます:
+
+```powershell
+.\scripts\setup-npcap-sdk.ps1
 ```
-pip install -r requirements.txt
+
+### 対応 OS
+
+- Windows (Npcap 必須)
+- Linux / macOS (libpcap が必要)
+
+## セットアップ
+
+### 1. 依存パッケージのインストール
+
+```bash
+npm install
 ```
 
-サーバー作動
+### 2. 開発サーバーの起動
 
+```bash
+npx tauri dev
 ```
-python3 app.py
+
+開発モードではフロントエンドは `http://localhost:5173` で動作し、Tauri がネイティブウィンドウで表示します。
+
+### 3. ビルド (リリース)
+
+```bash
+npx tauri build
 ```
 
-[http://127.0.0.1:5000](http://127.0.0.1:5000)にアクセスして利用可能．
+ビルド成果物は `src-tauri/target/release/` に出力されます。
 
-# 追加したい機能
+## 開発コマンド
 
-指定した通信をキャプチャし，表示したい
-HTTP通信をキャプチャ，内容を見れるようにし，Password，ID等を組み合わせたブルートフォースを行えるようにする
+| コマンド | 説明 |
+|---------|------|
+| `npm run dev` | Vite 開発サーバーのみ起動 (フロントエンド単体) |
+| `npx tauri dev` | Tauri 開発モード (フロントエンド + バックエンド) |
+| `npx tauri build` | リリースビルド |
+| `npm run build` | フロントエンドのみビルド |
+| `npm run lint` | ESLint によるコード検査 |
+| `npx vitest` | テスト実行 |
+| `npx vitest --coverage` | カバレッジ付きテスト実行 |
 
-WfuzzやFfuf
+## 設定
 
-ipスプーフィング
-ARPスプーフィング
-バッファオーバーフロー
-ディレクトリとラバーサル
-sqlインジェクション
-コマンドインジェクション
-DNSキャッシュポイゾニング
-くろすさいとすくりぷてぃんぐ
-DoS/DDoS
-DNS amp攻撃
-NTP増幅攻撃
-Smurf攻撃
-ICMP Flood攻撃
-リプレイ攻撃
+アプリケーションの設定は `src-tauri/config/default.toml` で管理されています。
 
-# pyenv
-
-```Powershell
-pyenv install 3.9.7 #Python3.9.7のインストール
-pyenv local 3.9.7 ローカルリポジトリのパイソンバージョン指定
-python -m venv myenv #myenvの作成
-.\myenv\Scripts\activate #仮想環境の起動
-pip install -r requirements.txt #必要なパッケージのインストール
-```
+| セクション | 設定項目 | 説明 |
+|-----------|---------|------|
+| `[scan]` | `arp_timeout_ms` | ARP 応答タイムアウト (ms) |
+| `[scan]` | `arp_retry_count` | ARP リトライ回数 |
+| `[scan]` | `port_scan_timeout_ms` | ポートスキャンタイムアウト (ms) |
+| `[scan]` | `port_scan_concurrency` | ポートスキャン同時接続数 |
+| `[scan]` | `sniff_timeout_sec` | スニッフィングタイムアウト (秒) |
+| `[scan]` | `poison_interval_sec` | ARP ポイズニング間隔 (秒) |
+| `[vendor]` | `api_url` | MAC ベンダー API の URL |
+| `[vendor]` | `use_local_oui` | ローカル OUI データベースの使用 |
+| `[paths]` | `pcap_output_dir` | キャプチャファイル出力先 |
+| `[paths]` | `pcap_filename` | キャプチャファイル名 |
