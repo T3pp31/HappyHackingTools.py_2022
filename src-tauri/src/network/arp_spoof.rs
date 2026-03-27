@@ -26,7 +26,7 @@ pub async fn start(
         }
     }
 
-    let net_info = interface::get_active_network_info()?;
+    let net_info = interface::get_active_network_info(&state.config.network)?;
     let interface_name = net_info.interface_name.clone();
     let timeout_ms = state.config.scan.arp_timeout_ms;
     let retry_count = state.config.scan.arp_retry_count;

@@ -15,7 +15,7 @@ pub async fn scan(
     client: &reqwest::Client,
     window: &Window,
 ) -> Result<Vec<DeviceInfo>, AppError> {
-    let net_info = interface::get_active_network_info()?;
+    let net_info = interface::get_active_network_info(&config.network)?;
     let ip: Ipv4Addr = net_info
         .ip_address
         .parse()

@@ -15,6 +15,9 @@ use_local_oui = true
 api_timeout_ms = 3000
 user_agent = "API Browser"
 
+[network]
+udp_probe_target = "8.8.8.8:80"
+
 [paths]
 pcap_output_dir = "captured"
 pcap_filename = "arper.pcap"
