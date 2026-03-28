@@ -1,5 +1,4 @@
 import React from "react";
-import { open } from "@tauri-apps/plugin-shell";
 
 interface NpcapDialogProps {
   visible: boolean;
@@ -49,14 +48,16 @@ const buttonContainerStyle: React.CSSProperties = {
   justifyContent: "flex-end",
 };
 
-const primaryButtonStyle: React.CSSProperties = {
-  backgroundColor: "var(--accent)",
-  color: "#fff",
-  border: "none",
-  borderRadius: "var(--radius)",
-  padding: "8px 16px",
+const linkStyle: React.CSSProperties = {
+  color: "var(--accent)",
+  wordBreak: "break-all" as const,
   fontSize: "13px",
-  cursor: "pointer",
+};
+
+const linkContainerStyle: React.CSSProperties = {
+  fontSize: "13px",
+  color: "var(--text-secondary)",
+  marginBottom: "20px",
 };
 
 const secondaryButtonStyle: React.CSSProperties = {
@@ -76,15 +77,6 @@ export const NpcapDialog: React.FC<NpcapDialogProps> = ({
 }) => {
   if (!visible) return null;
 
-  const handleDownload = async () => {
-    try {
-      await open(downloadUrl);
-    } catch {
-      // ブラウザを開けない場合は無視する
-    }
-    onClose();
-  };
-
   return (
     <div style={overlayStyle} onClick={onClose}>
       <div style={dialogStyle} onClick={(e) => e.stopPropagation()}>
@@ -93,12 +85,15 @@ export const NpcapDialog: React.FC<NpcapDialogProps> = ({
           This feature requires Npcap to be installed. Please download and
           install Npcap to use network scanning features.
         </p>
+        <p style={linkContainerStyle}>
+          Download:{" "}
+          <a href={downloadUrl} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+            {downloadUrl}
+          </a>
+        </p>
         <div style={buttonContainerStyle}>
           <button style={secondaryButtonStyle} onClick={onClose}>
             Close
-          </button>
-          <button style={primaryButtonStyle} onClick={handleDownload}>
-            Download Npcap
           </button>
         </div>
       </div>

@@ -1,32 +1,21 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { NpcapDialog } from "../src/components/common/NpcapDialog";
 
 /**
  * テスト観点表（等価分割・境界値）
  *
- * | # | 観点                 | 入力/条件                          | 期待結果                          | 種別     |
- * |---|---------------------|----------------------------------|----------------------------------|---------|
- * | 1 | 非表示               | visible=false                     | 何もレンダリングされない             | 正常系   |
- * | 2 | 表示                 | visible=true                      | タイトル・メッセージ・ボタンが表示    | 正常系   |
- * | 3 | Closeボタン          | Closeクリック                      | onCloseが呼ばれる                  | 正常系   |
- * | 4 | Downloadボタン       | Downloadクリック                   | open(url)が呼ばれ、onCloseが呼ばれる | 正常系   |
- * | 5 | オーバーレイクリック    | オーバーレイ部分クリック              | onCloseが呼ばれる                  | 正常系   |
- * | 6 | ダイアログ内クリック    | ダイアログ内部クリック               | onCloseが呼ばれない                | 正常系   |
- * | 7 | 空URL                | downloadUrl=""                    | Downloadボタンはopen("")で呼ばれる   | 境界値   |
- * | 8 | open失敗             | openがエラーを投げる                | エラーが発生する                    | 異常系   |
+ * | # | 観点                 | 入力/条件                          | 期待結果                                        | 種別     |
+ * |---|---------------------|----------------------------------|-------------------------------------------------|---------|
+ * | 1 | 非表示               | visible=false                     | 何もレンダリングされない                           | 正常系   |
+ * | 2 | 表示                 | visible=true                      | タイトル・メッセージ・リンク・ボタンが表示            | 正常系   |
+ * | 3 | Closeボタン          | Closeクリック                      | onCloseが呼ばれる                                | 正常系   |
+ * | 4 | ダウンロードリンク     | visible=true                      | <a>にhref,target,relが正しく設定される              | 正常系   |
+ * | 5 | オーバーレイクリック    | オーバーレイ部分クリック              | onCloseが呼ばれる                                | 正常系   |
+ * | 6 | ダイアログ内クリック    | ダイアログ内部クリック               | onCloseが呼ばれない                              | 正常系   |
+ * | 7 | 空URL                | downloadUrl=""                    | リンクのhrefが空文字で表示される                    | 境界値   |
  */
-
-// @tauri-apps/plugin-shellのモック
-const mockOpen = vi.fn();
-vi.mock("@tauri-apps/plugin-shell", () => ({
-  open: (...args: unknown[]) => mockOpen(...args),
-}));
-
-// モック設定後にコンポーネントをインポート
-const { NpcapDialog } = await import(
-  "../src/components/common/NpcapDialog"
-);
 
 describe("NpcapDialog", () => {
   afterEach(() => {
@@ -35,7 +24,6 @@ describe("NpcapDialog", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockOpen.mockResolvedValue(undefined);
   });
 
   // --- 正常系 ---
@@ -72,14 +60,16 @@ describe("NpcapDialog", () => {
     ).toBeTruthy();
   });
 
-  it("visible=trueの場合、Download NpcapボタンとCloseボタンが表示されること", () => {
+  it("visible=trueの場合、ダウンロードリンクとCloseボタンが表示されること", () => {
     // Given: visible=true
     // When: コンポーネントをレンダリングする
+    const testUrl = "https://npcap.com";
     render(
-      <NpcapDialog visible={true} downloadUrl="https://npcap.com" onClose={vi.fn()} />
+      <NpcapDialog visible={true} downloadUrl={testUrl} onClose={vi.fn()} />
     );
-    // Then: 両ボタンが表示される
-    expect(screen.getByText("Download Npcap")).toBeTruthy();
+    // Then: URLリンクとCloseボタンが表示される
+    const link = screen.getByRole("link", { name: testUrl });
+    expect(link).toBeTruthy();
     expect(screen.getByText("Close")).toBeTruthy();
   });
 
@@ -97,22 +87,20 @@ describe("NpcapDialog", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("Download Npcapボタンをクリックするとopen(url)が呼ばれ、onCloseが呼ばれること", async () => {
+  it("ダウンロードリンクにhref、target、relが正しく設定されていること", () => {
     // Given: visible=true, downloadUrlが設定されている
-    const onClose = vi.fn();
     const testUrl = "https://npcap.com/#download";
     render(
-      <NpcapDialog visible={true} downloadUrl={testUrl} onClose={onClose} />
+      <NpcapDialog visible={true} downloadUrl={testUrl} onClose={vi.fn()} />
     );
 
-    // When: Download Npcapボタンをクリックする
-    fireEvent.click(screen.getByText("Download Npcap"));
+    // When: リンク要素を取得する
+    const link = screen.getByRole("link", { name: testUrl });
 
-    // Then: open(url)が呼ばれ、onCloseが呼ばれる
-    await vi.waitFor(() => {
-      expect(mockOpen).toHaveBeenCalledWith(testUrl);
-      expect(onClose).toHaveBeenCalledTimes(1);
-    });
+    // Then: href, target, relが正しく設定されている
+    expect(link.getAttribute("href")).toBe(testUrl);
+    expect(link.getAttribute("target")).toBe("_blank");
+    expect(link.getAttribute("rel")).toBe("noopener noreferrer");
   });
 
   it("オーバーレイをクリックするとonCloseが呼ばれること", () => {
@@ -146,39 +134,20 @@ describe("NpcapDialog", () => {
 
   // --- 境界値 ---
 
-  it("downloadUrlが空文字の場合でもDownloadボタンがopen('')で呼ばれること", async () => {
+  it("downloadUrlが空文字の場合でもリンクが空のhrefで表示されること", () => {
     // Given: downloadUrl=""
-    const onClose = vi.fn();
-    render(
-      <NpcapDialog visible={true} downloadUrl="" onClose={onClose} />
+    const { container } = render(
+      <NpcapDialog visible={true} downloadUrl="" onClose={vi.fn()} />
     );
 
-    // When: Download Npcapボタンをクリックする
-    fireEvent.click(screen.getByText("Download Npcap"));
+    // When: リンク要素を取得する（空テキストのためgetByRoleでは取得不可）
+    const link = container.querySelector("a");
 
-    // Then: open("")が呼ばれる
-    await vi.waitFor(() => {
-      expect(mockOpen).toHaveBeenCalledWith("");
-    });
-  });
-
-  // --- 異常系 ---
-
-  it("openがエラーを投げた場合でもonCloseが呼ばれること", async () => {
-    // Given: openがエラーを投げる
-    mockOpen.mockRejectedValue(new Error("Failed to open"));
-    const onClose = vi.fn();
-    render(
-      <NpcapDialog visible={true} downloadUrl="https://npcap.com" onClose={onClose} />
-    );
-
-    // When: Download Npcapボタンをクリックする
-    fireEvent.click(screen.getByText("Download Npcap"));
-
-    // Then: openが呼ばれ、エラーが握りつぶされ、onCloseが呼ばれる
-    await vi.waitFor(() => {
-      expect(mockOpen).toHaveBeenCalled();
-      expect(onClose).toHaveBeenCalledTimes(1);
-    });
+    // Then: hrefが空文字である
+    expect(link).not.toBeNull();
+    expect(link!.getAttribute("href")).toBe("");
+    expect(link!.getAttribute("target")).toBe("_blank");
+    expect(link!.getAttribute("rel")).toBe("noopener noreferrer");
+    expect(link!.textContent).toBe("");
   });
 });
