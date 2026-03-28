@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { useTauriCommand } from "../hooks/useTauriCommand";
-import { useNpcapCheck } from "../hooks/useNpcapCheck";
 import { DataTable } from "../components/common/DataTable";
 import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { ErrorMessage } from "../components/common/ErrorMessage";
-import { NpcapDialog } from "../components/common/NpcapDialog";
 import { inputStyle, buttonStyle, labelStyle } from "../styles/formStyles";
 import { LAN_SCAN_DEFAULTS } from "../config/defaults";
 import type { DeviceInfo } from "../types";
@@ -21,13 +19,8 @@ export const LanScanPage: React.FC = () => {
   const [end, setEnd] = useState(LAN_SCAN_DEFAULTS.endHost);
   const { data, loading, error, execute } =
     useTauriCommand<DeviceInfo[]>("lan_scan");
-  const { showDialog, downloadUrl, checkAndExecute, closeDialog } =
-    useNpcapCheck();
-
   const handleScan = () => {
-    checkAndExecute(() => {
-      execute({ start: Number(start), end: Number(end) });
-    });
+    execute({ start: Number(start), end: Number(end) });
   };
 
   return (
@@ -72,11 +65,6 @@ export const LanScanPage: React.FC = () => {
       {loading && <LoadingSpinner message="Scanning network..." />}
       {error && <ErrorMessage message={error} />}
       {data && <DataTable columns={COLUMNS} data={data} />}
-      <NpcapDialog
-        visible={showDialog}
-        downloadUrl={downloadUrl}
-        onClose={closeDialog}
-      />
     </div>
   );
 };
