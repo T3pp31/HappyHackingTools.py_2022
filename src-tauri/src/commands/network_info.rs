@@ -12,6 +12,8 @@ pub struct NetworkInfo {
 }
 
 #[tauri::command]
-pub async fn get_network_info() -> Result<NetworkInfo, AppError> {
-    crate::network::interface::get_active_network_info()
+pub async fn get_network_info(
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<NetworkInfo, AppError> {
+    crate::network::interface::get_active_network_info(&state.config.network)
 }

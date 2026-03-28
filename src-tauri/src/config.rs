@@ -8,6 +8,7 @@ pub const NPCAP_DOWNLOAD_URL: &str = "https://npcap.com/#download";
 pub struct AppConfig {
     pub scan: ScanConfig,
     pub vendor: VendorConfig,
+    pub network: NetworkConfig,
     pub paths: PathsConfig,
 }
 
@@ -30,6 +31,11 @@ pub struct VendorConfig {
     pub use_local_oui: bool,
     pub api_timeout_ms: u64,
     pub user_agent: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct NetworkConfig {
+    pub udp_probe_target: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -80,6 +86,9 @@ impl Default for AppConfig {
                 use_local_oui: true,
                 api_timeout_ms: 3000,
                 user_agent: "API Browser".to_string(),
+            },
+            network: NetworkConfig {
+                udp_probe_target: "8.8.8.8:80".to_string(),
             },
             paths: PathsConfig {
                 pcap_output_dir: "captured".to_string(),
