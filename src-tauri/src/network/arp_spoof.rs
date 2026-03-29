@@ -1,17 +1,26 @@
-use std::net::Ipv4Addr;
-use std::sync::Arc;
-use std::time::Duration;
-
-use pnet::util::MacAddr;
-use pnet_datalink::{self, Channel};
-use tokio::sync::Mutex;
-
 use crate::commands::arp_spoof::ArpSpoofStatus;
 use crate::error::AppError;
-use crate::network::{arp, interface, packet};
 use crate::AppState;
 
+#[cfg(feature = "npcap")]
+use std::net::Ipv4Addr;
+#[cfg(feature = "npcap")]
+use std::sync::Arc;
+#[cfg(feature = "npcap")]
+use std::time::Duration;
+
+#[cfg(feature = "npcap")]
+use pnet::util::MacAddr;
+#[cfg(feature = "npcap")]
+use pnet_datalink::{self, Channel};
+#[cfg(feature = "npcap")]
+use tokio::sync::Mutex;
+
+#[cfg(feature = "npcap")]
+use crate::network::{arp, interface, packet};
+
 /// Start ARP spoofing between target and gateway.
+#[cfg(feature = "npcap")]
 pub async fn start(
     target_ip: &str,
     gateway_ip: &str,
@@ -22,7 +31,9 @@ pub async fn start(
     {
         let running = state.arp_spoof_running.lock().await;
         if *running {
-            return Err(AppError::ArpSpoof("ARP spoofing is already running".to_string()));
+            return Err(AppError::ArpSpoof(
+                "ARP spoofing is already running".to_string(),
+            ));
         }
     }
 
@@ -36,15 +47,15 @@ pub async fn start(
     let pcap_filename = state.config.paths.pcap_filename.clone();
 
     // Resolve MAC addresses
-    let gateway_mac = arp::get_mac(gateway_ip, &interface_name, timeout_ms, retry_count)?
-        .ok_or_else(|| {
-            AppError::ArpSpoof(format!("Could not resolve MAC for gateway {}", gateway_ip))
-        })?;
+    let gateway_mac =
+        arp::get_mac(gateway_ip, &interface_name, timeout_ms, retry_count)?.ok_or_else(
+            || AppError::ArpSpoof(format!("Could not resolve MAC for gateway {}", gateway_ip)),
+        )?;
 
-    let target_mac = arp::get_mac(target_ip, &interface_name, timeout_ms, retry_count)?
-        .ok_or_else(|| {
-            AppError::ArpSpoof(format!("Could not resolve MAC for target {}", target_ip))
-        })?;
+    let target_mac =
+        arp::get_mac(target_ip, &interface_name, timeout_ms, retry_count)?.ok_or_else(
+            || AppError::ArpSpoof(format!("Could not resolve MAC for target {}", target_ip)),
+        )?;
 
     let running_flag = state.arp_spoof_running.clone();
 
@@ -86,6 +97,19 @@ pub async fn start(
     Ok("ARP spoofing started".to_string())
 }
 
+// npcap フィーチャー無効時のスタブ実装
+#[cfg(not(feature = "npcap"))]
+pub async fn start(
+    _target_ip: &str,
+    _gateway_ip: &str,
+    _packet_count: u32,
+    _state: &AppState,
+) -> Result<String, AppError> {
+    Err(AppError::ArpSpoof(
+        "ARP spoofing requires building with --features npcap".to_string(),
+    ))
+}
+
 /// Stop ARP spoofing.
 pub async fn stop(state: &AppState) -> Result<ArpSpoofStatus, AppError> {
     let mut running = state.arp_spoof_running.lock().await;
@@ -108,6 +132,7 @@ pub async fn status(state: &AppState) -> Result<ArpSpoofStatus, AppError> {
     })
 }
 
+#[cfg(feature = "npcap")]
 #[allow(clippy::too_many_arguments)]
 async fn run_spoof(
     target_ip: &str,
@@ -135,8 +160,9 @@ async fn run_spoof(
         .parse()
         .map_err(|e| AppError::ArpSpoof(format!("Invalid gateway MAC: {}", e)))?;
 
-    let interface = packet::find_interface(interface_name)
-        .map_err(|_| AppError::ArpSpoof(format!("Interface '{}' not found", interface_name)))?;
+    let interface = packet::find_interface(interface_name).map_err(|_| {
+        AppError::ArpSpoof(format!("Interface '{}' not found", interface_name))
+    })?;
 
     let source_mac = interface
         .mac
@@ -169,7 +195,11 @@ async fn run_spoof(
 
     let (mut tx, _rx) = match pnet_datalink::channel(&interface, config) {
         Ok(Channel::Ethernet(tx, rx)) => (tx, rx),
-        _ => return Err(AppError::ArpSpoof("Cannot open datalink channel".to_string())),
+        _ => {
+            return Err(AppError::ArpSpoof(
+                "Cannot open datalink channel".to_string(),
+            ))
+        }
     };
 
     loop {
@@ -215,7 +245,9 @@ async fn run_spoof(
         tokio::time::sleep(Duration::from_secs(poison_interval_sec)).await;
     }
 
-    savefile.flush().map_err(|e| AppError::ArpSpoof(format!("pcap flush error: {}", e)))?;
+    savefile
+        .flush()
+        .map_err(|e| AppError::ArpSpoof(format!("pcap flush error: {}", e)))?;
 
     // Reset ARP tables
     for _ in 0..reset_count {
