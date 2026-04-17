@@ -9,6 +9,7 @@ pub struct AppConfig {
     pub scan: ScanConfig,
     pub vendor: VendorConfig,
     pub network: NetworkConfig,
+    pub feature_flags: FeatureFlagsConfig,
     pub paths: PathsConfig,
 }
 
@@ -36,6 +37,13 @@ pub struct VendorConfig {
 #[derive(Debug, Deserialize, Clone)]
 pub struct NetworkConfig {
     pub udp_probe_target: String,
+    pub enable_external_cli_fallback: bool,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct FeatureFlagsConfig {
+    pub prefer_rust_implementation: bool,
+    pub enable_python_bridge: bool,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -89,6 +97,11 @@ impl Default for AppConfig {
             },
             network: NetworkConfig {
                 udp_probe_target: "8.8.8.8:80".to_string(),
+                enable_external_cli_fallback: false,
+            },
+            feature_flags: FeatureFlagsConfig {
+                prefer_rust_implementation: true,
+                enable_python_bridge: false,
             },
             paths: PathsConfig {
                 pcap_output_dir: "captured".to_string(),
