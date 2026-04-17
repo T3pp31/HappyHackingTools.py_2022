@@ -29,7 +29,7 @@ pub async fn scan(
     let targets = build_scan_targets(ip, mask, start, end)?;
 
     let interface_name = &net_info.interface_name;
-    let total = (end as u32).saturating_sub(start as u32) + 1;
+    let total = targets.len() as u32;
     let mut devices = Vec::new();
 
     for (index, target_ip) in targets.into_iter().enumerate() {
@@ -83,13 +83,23 @@ fn build_scan_targets(
     let network = Ipv4Network::with_netmask(ip, mask)
         .map_err(|e| AppError::Scan(format!("Invalid network: {}", e)))?;
     let network_base = network.network();
+    let broadcast = network.broadcast();
     let base_u32 = u32::from(network_base);
+    let broadcast_u32 = u32::from(broadcast);
+    let max_offset = broadcast_u32.saturating_sub(base_u32);
 
     // start/end は API 仕様上 u8 (0..=255) のため、/24 より広いネットワークでも
     // 「ネットワーク先頭から最大 256 ホスト分」のオフセットとして扱う。
     // /16 等をフルスキャンしたい場合は、API を u16 以上へ拡張して範囲指定を広げる。
-    let targets = (start..=end)
-        .map(|offset| Ipv4Addr::from(base_u32 + u32::from(offset)))
+    // ただし、実際に生成するIPは現在のサブネット境界内に制限する。
+    let start_u32 = u32::from(start);
+    if start_u32 > max_offset {
+        return Ok(Vec::new());
+    }
+    let end_u32 = u32::from(end).min(max_offset);
+
+    let targets = (start_u32..=end_u32)
+        .map(|offset| Ipv4Addr::from(base_u32 + offset))
         .collect();
 
     Ok(targets)
@@ -137,5 +147,27 @@ mod tests {
 
         let expected = vec![Ipv4Addr::new(10, 20, 0, 254), Ipv4Addr::new(10, 20, 0, 255)];
         assert_eq!(targets, expected);
+    }
+
+    #[test]
+    fn build_scan_targets_for_25_network_is_clamped_to_subnet() {
+        let ip = Ipv4Addr::new(192, 168, 1, 200);
+        let mask = Ipv4Addr::new(255, 255, 255, 128);
+        let targets = build_scan_targets(ip, mask, 126, 255).expect("target build should succeed");
+
+        let expected = vec![
+            Ipv4Addr::new(192, 168, 1, 254),
+            Ipv4Addr::new(192, 168, 1, 255),
+        ];
+        assert_eq!(targets, expected);
+    }
+
+    #[test]
+    fn build_scan_targets_returns_empty_when_start_is_outside_subnet() {
+        let ip = Ipv4Addr::new(192, 168, 1, 200);
+        let mask = Ipv4Addr::new(255, 255, 255, 128);
+        let targets = build_scan_targets(ip, mask, 200, 255).expect("target build should succeed");
+
+        assert!(targets.is_empty());
     }
 }
