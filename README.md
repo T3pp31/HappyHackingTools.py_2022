@@ -160,3 +160,21 @@ npx tauri build
 | `[vendor]` | `use_local_oui` | ローカル OUI データベースの使用 |
 | `[paths]` | `pcap_output_dir` | キャプチャファイル出力先 |
 | `[paths]` | `pcap_filename` | キャプチャファイル名 |
+
+## セキュリティ設定変更後の確認手順
+
+`src-tauri/tauri.conf.json` と `src-tauri/capabilities/default.json` の権限を絞った後は、以下の手順で必要機能だけが動作することを確認してください。
+
+1. アプリを起動する。
+   ```bash
+   npx tauri dev
+   ```
+2. Npcap が未インストールの環境で LAN Scan / ARP Spoof など Npcap 依存機能を開く。
+3. Npcap 案内ダイアログに表示される `https://npcap.com/#download` のリンクをクリックし、既定ブラウザで外部ページが開くことを確認する。
+4. バイナリビューアで「Select File」を実行し、ファイル選択ダイアログが開くことと、選択ファイルの読み取りが成功することを確認する。
+5. 上記以外の画面操作で、外部 URL を任意に開く導線が存在しないことを確認する。
+6. 開発者ツールの Console に CSP 違反エラーが継続的に出ていないことを確認する。
+
+補足:
+- 現在の設定は、`dialog:allow-open` のみを許可し、`fs:default` など広い権限を付与しない構成です。
+- 外部リンク導線は Npcap ダイアログに限定し、それ以外で shell 経由のオープンを許可しない設定です。
