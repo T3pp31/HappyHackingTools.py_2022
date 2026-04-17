@@ -1,9 +1,9 @@
 use std::net::{Ipv4Addr, SocketAddrV4};
 use std::time::Duration;
 
+use futures::stream::{self, StreamExt};
 use tauri::{Emitter, Window};
 use tokio::net::TcpStream;
-use tokio::sync::Semaphore;
 use tokio::time::timeout;
 
 use crate::commands::port_scan::PortScanResult;
@@ -30,62 +30,54 @@ pub async fn scan(
 
     let total = (actual_end as u32) - (actual_start as u32) + 1;
     let connect_timeout = Duration::from_millis(config.scan.port_scan_timeout_ms);
-    let semaphore = std::sync::Arc::new(Semaphore::new(config.scan.port_scan_concurrency));
-
-    let mut handles = Vec::with_capacity(total as usize);
-
-    for port in actual_start..=actual_end {
-        let sem = semaphore.clone();
-        let addr = SocketAddrV4::new(target_ip, port);
-        let window_clone = window.clone();
-        let ip_str = ip.to_string();
-
-        let handle = tokio::spawn(async move {
-            let _permit = sem.acquire().await.unwrap();
-
-            let is_open =
-                timeout(connect_timeout, TcpStream::connect(addr))
-                    .await
-                    .map(|result| result.is_ok())
-                    .unwrap_or(false);
-
-            if is_open {
-                let _ = window_clone.emit(
-                    "port-found",
-                    serde_json::json!({
-                        "port": port,
-                        "ip": ip_str,
-                    }),
-                );
-            }
-
-            (port, is_open)
-        });
-
-        handles.push(handle);
-    }
 
     let mut open_ports = Vec::new();
     let mut completed: u32 = 0;
 
-    for handle in handles {
-        if let Ok((port, is_open)) = handle.await {
-            completed += 1;
-            if is_open {
-                open_ports.push(port);
-            }
+    let mut scan_stream = stream::iter(actual_start..=actual_end)
+        .map(|port| {
+            let addr = SocketAddrV4::new(target_ip, port);
+            let window_clone = window.clone();
+            let ip_str = ip.to_string();
 
-            // Emit progress at configured interval to avoid flooding
-            if completed % config.scan.progress_report_interval == 0 || completed == total {
-                let _ = window.emit(
-                    "scan-progress",
-                    serde_json::json!({
-                        "current": completed,
-                        "total": total,
-                        "message": format!("Scanned {}/{} ports", completed, total),
-                    }),
-                );
+            async move {
+                let is_open = timeout(connect_timeout, TcpStream::connect(addr))
+                    .await
+                    .map(|result| result.is_ok())
+                    .unwrap_or(false);
+
+                if is_open {
+                    let _ = window_clone.emit(
+                        "port-found",
+                        serde_json::json!({
+                            "port": port,
+                            "ip": ip_str,
+                        }),
+                    );
+                }
+
+                (port, is_open)
             }
+        })
+        .buffer_unordered(config.scan.port_scan_concurrency as usize);
+
+    while let Some((port, is_open)) = scan_stream.next().await {
+        completed += 1;
+
+        if is_open {
+            open_ports.push(port);
+        }
+
+        // Emit progress at configured interval to avoid flooding
+        if completed % config.scan.progress_report_interval == 0 || completed == total {
+            let _ = window.emit(
+                "scan-progress",
+                serde_json::json!({
+                    "current": completed,
+                    "total": total,
+                    "message": format!("Scanned {}/{} ports", completed, total),
+                }),
+            );
         }
     }
 
