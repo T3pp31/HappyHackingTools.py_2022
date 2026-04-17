@@ -17,6 +17,11 @@ user_agent = "API Browser"
 
 [network]
 udp_probe_target = "8.8.8.8:80"
+enable_external_cli_fallback = false
+
+[feature_flags]
+prefer_rust_implementation = true
+enable_python_bridge = false
 
 [paths]
 pcap_output_dir = "captured"

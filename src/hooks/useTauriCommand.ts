@@ -19,6 +19,7 @@ export function useTauriCommand<T>(
     async (args?: Record<string, unknown>): Promise<T | null> => {
       setLoading(true);
       setError(null);
+      setData(null);
       try {
         const result = await invoke<T>(command, args ?? {});
         setData(result);

@@ -201,13 +201,49 @@ fn enrich_from_platform(ip: Ipv4Addr) -> Option<NetworkInfo> {
     enrich_from_ip_command(ip)
 }
 
+fn run_external_command(
+    command: &str,
+    args: impl IntoIterator<Item = impl AsRef<str>>,
+) -> Option<std::process::Output> {
+    let app_config = crate::config::AppConfig::load().ok().unwrap_or_default();
+
+    if !app_config.network.enable_external_cli_fallback {
+        log::info!(
+            "External CLI fallback is disabled by config; skipping command '{}'",
+            command
+        );
+        return None;
+    }
+
+    if !app_config.feature_flags.prefer_rust_implementation {
+        log::warn!(
+            "prefer_rust_implementation is disabled; external CLI fallback '{}' is enabled",
+            command
+        );
+    }
+
+    #[cfg(not(feature = "external-cli-fallback"))]
+    {
+        let _ = args;
+        log::info!(
+            "Feature 'external-cli-fallback' is disabled at build time; skipping command '{}'",
+            command
+        );
+        return None;
+    }
+
+    #[cfg(feature = "external-cli-fallback")]
+    {
+        let mut cmd = std::process::Command::new(command);
+        cmd.args(args.into_iter().map(|arg| arg.as_ref().to_string()));
+        return cmd.output().ok();
+    }
+}
+
 /// Windows: Parse `netsh interface ipv4 show addresses` to extract network details.
 #[cfg(target_os = "windows")]
 fn enrich_from_netsh(ip: Ipv4Addr) -> Option<NetworkInfo> {
-    let output = std::process::Command::new("netsh")
-        .args(["interface", "ipv4", "show", "addresses"])
-        .output()
-        .ok()?;
+    let output = run_external_command("netsh", ["interface", "ipv4", "show", "addresses"])?;
 
     if !output.status.success() {
         return None;
@@ -255,10 +291,7 @@ fn enrich_from_netsh(ip: Ipv4Addr) -> Option<NetworkInfo> {
 /// Linux: Parse `ip -4 addr show` to extract network details.
 #[cfg(not(target_os = "windows"))]
 fn enrich_from_ip_command(ip: Ipv4Addr) -> Option<NetworkInfo> {
-    let output = std::process::Command::new("ip")
-        .args(["-4", "addr", "show"])
-        .output()
-        .ok()?;
+    let output = run_external_command("ip", ["-4", "addr", "show"])?;
 
     if !output.status.success() {
         return None;

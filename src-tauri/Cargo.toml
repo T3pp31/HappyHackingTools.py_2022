@@ -12,6 +12,11 @@ rust-version = "1.77.2"
 name = "happyhacking_tools"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[features]
+default = ["python-runtime-free"]
+python-runtime-free = []
+external-cli-fallback = []
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
@@ -22,6 +27,7 @@ tauri-plugin-shell = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["full"] }
+futures = "0.3"
 pnet = "0.35"
 pnet_datalink = "0.35"
 dns-lookup = "2"
