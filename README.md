@@ -161,23 +161,20 @@ npx tauri build
 | `[paths]` | `pcap_output_dir` | キャプチャファイル出力先 |
 | `[paths]` | `pcap_filename` | キャプチャファイル名 |
 
-### 機能フラグ（段階移行）
+## セキュリティ設定変更後の確認手順
 
-Python/外部CLI依存を段階的に削減するため、以下のフラグを用意しています。
+`src-tauri/tauri.conf.json` と `src-tauri/capabilities/default.json` の権限を絞った後は、以下の手順で必要機能だけが動作することを確認してください。
 
-- Cargo feature（`src-tauri/Cargo.toml`）
-  - `python-runtime-free`（デフォルト）
-  - `external-cli-fallback`（必要時のみ有効化）
-- 設定ファイル（`src-tauri/config/default.toml`）
-  - `[feature_flags] prefer_rust_implementation`
-  - `[feature_flags] enable_python_bridge`
-  - `[network] enable_external_cli_fallback`
+1. アプリを起動する。
+   ```bash
+   npx tauri dev
+   ```
+2. Npcap が未インストールの環境で LAN Scan / ARP Spoof など Npcap 依存機能を開く。
+3. Npcap 案内ダイアログに表示される `https://npcap.com/#download` のリンクをクリックし、既定ブラウザで外部ページが開くことを確認する。
+4. バイナリビューアで「Select File」を実行し、ファイル選択ダイアログが開くことと、選択ファイルの読み取りが成功することを確認する。
+5. 上記以外の画面操作で、外部 URL を任意に開く導線が存在しないことを確認する。
+6. 開発者ツールの Console に CSP 違反エラーが継続的に出ていないことを確認する。
 
-依存棚卸しと置換計画は `docs/dependency-matrix.md` を参照してください。
-
-## リリース判定
-
-リリース判定条件として **「追加インストール不要」** を必須とします。
-
-- デフォルトビルド/デフォルト設定で Python ランタイム不要
-- 初回起動時に Python / pip の追加インストール不要
+補足:
+- 現在の設定は、`dialog:allow-open` のみを許可し、`fs:default` など広い権限を付与しない構成です。
+- 外部リンク導線は Npcap ダイアログに限定し、shell 側も `https://npcap.com/#download` のみ許可する設定です。

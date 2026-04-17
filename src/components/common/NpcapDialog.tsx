@@ -1,4 +1,5 @@
 import React from "react";
+import { open as openExternal } from "@tauri-apps/plugin-shell";
 
 interface NpcapDialogProps {
   visible: boolean;
@@ -77,6 +78,11 @@ export const NpcapDialog: React.FC<NpcapDialogProps> = ({
 }) => {
   if (!visible) return null;
 
+  const handleOpenDownload = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    await openExternal(downloadUrl);
+  };
+
   return (
     <div style={overlayStyle} onClick={onClose}>
       <div style={dialogStyle} onClick={(e) => e.stopPropagation()}>
@@ -87,7 +93,13 @@ export const NpcapDialog: React.FC<NpcapDialogProps> = ({
         </p>
         <p style={linkContainerStyle}>
           Download:{" "}
-          <a href={downloadUrl} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+          <a
+            href={downloadUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={linkStyle}
+            onClick={handleOpenDownload}
+          >
             {downloadUrl}
           </a>
         </p>
