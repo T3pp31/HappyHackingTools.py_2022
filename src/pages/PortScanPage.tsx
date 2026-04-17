@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useTauriCommand } from "../hooks/useTauriCommand";
 import { useTauriEvent } from "../hooks/useTauriEvent";
 import { LoadingSpinner } from "../components/common/LoadingSpinner";
@@ -12,6 +12,12 @@ interface PortFoundEvent {
   port: number;
 }
 
+interface ActivePortScan {
+  sessionId: number;
+  ip: string;
+  range: [number, number];
+}
+
 export const PortScanPage: React.FC = () => {
   const [ip, setIp] = useState(PORT_SCAN_DEFAULTS.targetIp);
   const [portStart, setPortStart] = useState(PORT_SCAN_DEFAULTS.portStart);
@@ -20,6 +26,8 @@ export const PortScanPage: React.FC = () => {
   const [openPorts, setOpenPorts] = useState<number[]>([]);
   const [scanTargetIp, setScanTargetIp] = useState("");
   const [scanRange, setScanRange] = useState<[number, number] | null>(null);
+  const activeScanRef = useRef<ActivePortScan | null>(null);
+  const scanSessionCounterRef = useRef(0);
   const { data, loading, error, execute } =
     useTauriCommand<PortScanResult>("port_scan");
 
@@ -28,7 +36,16 @@ export const PortScanPage: React.FC = () => {
   }, []);
 
   const handlePortFound = useCallback((event: PortFoundEvent) => {
-    setScanTargetIp(event.ip);
+    const activeScan = activeScanRef.current;
+    if (!activeScan || activeScan.ip !== event.ip) {
+      return;
+    }
+
+    const [rangeStart, rangeEnd] = activeScan.range;
+    if (event.port < rangeStart || event.port > rangeEnd) {
+      return;
+    }
+
     setOpenPorts((previous) => {
       if (previous.includes(event.port)) {
         return previous;
@@ -47,19 +64,33 @@ export const PortScanPage: React.FC = () => {
     const endPort = Number(portEnd);
     const normalizedRange: [number, number] =
       startPort <= endPort ? [startPort, endPort] : [endPort, startPort];
+    const sessionId = scanSessionCounterRef.current + 1;
+    scanSessionCounterRef.current = sessionId;
+    activeScanRef.current = {
+      sessionId,
+      ip,
+      range: normalizedRange,
+    };
     setScanTargetIp(ip);
     setScanRange(normalizedRange);
 
-    const result = await execute({
-      ip,
-      port_start: startPort,
-      port_end: endPort,
-    });
+    try {
+      const result = await execute({
+        ip,
+        port_start: startPort,
+        port_end: endPort,
+      });
 
-    if (result) {
-      setScanTargetIp(result.ip);
-      setScanRange(result.scanned_range);
-      setOpenPorts(result.open_ports);
+      if (result) {
+        setScanTargetIp(result.ip);
+        setScanRange(result.scanned_range);
+        setOpenPorts(result.open_ports);
+      }
+    } finally {
+      const currentScan = activeScanRef.current;
+      if (currentScan?.sessionId === sessionId) {
+        activeScanRef.current = null;
+      }
     }
   };
 
