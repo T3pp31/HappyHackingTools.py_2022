@@ -22,7 +22,7 @@ The owner of this repository assumes no responsibility whatsoever.
 | フロントエンド | React 18 + TypeScript 5.6 |
 | ビルドツール | Vite 5 |
 | ルーティング | React Router v7 |
-| テスト | Vitest + Testing Library + happy-dom |
+| テスト | Vitest + Testing Library + happy-dom / pytest / node:test |
 | パケットキャプチャ | pnet / pcap (Npcap SDK) |
 | 設定管理 | TOML |
 
@@ -68,7 +68,9 @@ HappyHackingTools.py_2022/
 │   │   └── default.toml          # デフォルト設定ファイル
 │   ├── capabilities/             # Tauri v2 権限設定
 │   └── tauri.conf.json           # Tauri 設定
-├── tests/                        # フロントエンドテスト (Vitest)
+├── tests/                        # Vitest / pytest / node:test のテスト
+├── docs/                         # 補足ドキュメント
+├── notebooks/                    # 実験・検証用ノートブック
 ├── scripts/                      # ビルドスクリプト
 │   └── setup-npcap-sdk.ps1       # Npcap SDK セットアップ
 ├── package.json
@@ -143,6 +145,8 @@ npx tauri build
 | `npm run lint` | ESLint によるコード検査 |
 | `npx vitest` | テスト実行 |
 | `npx vitest --coverage` | カバレッジ付きテスト実行 |
+| `uv run pytest tests/test_build_rs.py -v` | `build.rs` の構造検証 |
+| `node --test tests/readmeConsistency.test.mjs` | README 整合性チェック |
 
 ## 設定
 
@@ -156,8 +160,17 @@ npx tauri build
 | `[scan]` | `port_scan_concurrency` | ポートスキャン同時接続数 |
 | `[scan]` | `sniff_timeout_sec` | スニッフィングタイムアウト (秒) |
 | `[scan]` | `poison_interval_sec` | ARP ポイズニング間隔 (秒) |
+| `[scan]` | `reset_packet_count` | ARP 停止時に送信する復旧パケット数 |
+| `[scan]` | `progress_report_interval` | 進捗イベント送信間隔 |
+| `[scan]` | `lan_scan_arp_retry_count` | LAN スキャン時の ARP リトライ回数 |
 | `[vendor]` | `api_url` | MAC ベンダー API の URL |
 | `[vendor]` | `use_local_oui` | ローカル OUI データベースの使用 |
+| `[vendor]` | `api_timeout_ms` | MAC ベンダー API タイムアウト (ms) |
+| `[vendor]` | `user_agent` | MAC ベンダー API 呼び出し時の User-Agent |
+| `[network]` | `udp_probe_target` | ネットワーク情報取得時の UDP プローブ先 |
+| `[network]` | `enable_external_cli_fallback` | `netsh` / `ip` フォールバックの有効化 |
+| `[feature_flags]` | `prefer_rust_implementation` | Rust 実装を優先するか |
+| `[feature_flags]` | `enable_python_bridge` | Python ブリッジ機能の有効化 |
 | `[paths]` | `pcap_output_dir` | キャプチャファイル出力先 |
 | `[paths]` | `pcap_filename` | キャプチャファイル名 |
 
@@ -176,5 +189,5 @@ npx tauri build
 6. 開発者ツールの Console に CSP 違反エラーが継続的に出ていないことを確認する。
 
 補足:
-- 現在の設定は、`dialog:allow-open` のみを許可し、`fs:default` など広い権限を付与しない構成です。
-- 外部リンク導線は Npcap ダイアログに限定し、shell 側も `https://npcap.com/#download` のみ許可する設定です。
+- 現在の権限は `core:default`、`dialog:allow-open`、`shell:allow-open` のみを許可し、`fs:default` など広い権限は付与しない構成です。
+- 外部リンク導線は Npcap ダイアログに限定し、`shell.open` は `https://npcap.com/#download` のみ許可する設定です。
