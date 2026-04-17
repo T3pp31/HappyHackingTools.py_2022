@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useTauriCommand } from "../hooks/useTauriCommand";
+import { useTauriEvent } from "../hooks/useTauriEvent";
 import { DataTable } from "../components/common/DataTable";
 import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { ErrorMessage } from "../components/common/ErrorMessage";
 import { inputStyle, buttonStyle, labelStyle } from "../styles/formStyles";
 import { LAN_SCAN_DEFAULTS } from "../config/defaults";
-import type { DeviceInfo } from "../types";
+import type { DeviceInfo, ScanProgress } from "../types";
 
 const COLUMNS = [
   { key: "ip" as const, label: "IP Address" },
@@ -17,10 +18,38 @@ const COLUMNS = [
 export const LanScanPage: React.FC = () => {
   const [start, setStart] = useState(LAN_SCAN_DEFAULTS.startHost);
   const [end, setEnd] = useState(LAN_SCAN_DEFAULTS.endHost);
+  const [devices, setDevices] = useState<DeviceInfo[]>([]);
+  const [progress, setProgress] = useState<ScanProgress | null>(null);
   const { data, loading, error, execute } =
     useTauriCommand<DeviceInfo[]>("lan_scan");
-  const handleScan = () => {
-    execute({ start: Number(start), end: Number(end) });
+
+  const handleScanProgress = useCallback((nextProgress: ScanProgress) => {
+    setProgress(nextProgress);
+  }, []);
+
+  const handleDeviceFound = useCallback((device: DeviceInfo) => {
+    setDevices((previous) => {
+      const existingIndex = previous.findIndex((item) => item.ip === device.ip);
+      if (existingIndex === -1) {
+        return [...previous, device];
+      }
+
+      const updated = [...previous];
+      updated[existingIndex] = device;
+      return updated;
+    });
+  }, []);
+
+  useTauriEvent<ScanProgress>("scan-progress", handleScanProgress);
+  useTauriEvent<DeviceInfo>("device-found", handleDeviceFound);
+
+  const handleScan = async () => {
+    setDevices([]);
+    setProgress(null);
+    const result = await execute({ start: Number(start), end: Number(end) });
+    if (result) {
+      setDevices(result);
+    }
   };
 
   return (
@@ -62,9 +91,18 @@ export const LanScanPage: React.FC = () => {
         </button>
       </div>
 
-      {loading && <LoadingSpinner message="Scanning network..." />}
+      {loading && (
+        <>
+          <LoadingSpinner message="Scanning network..." />
+          {progress && (
+            <p style={{ marginTop: "-28px", marginBottom: "20px", color: "var(--text-secondary)", fontSize: "13px", textAlign: "center" }}>
+              {progress.current} / {progress.total} - {progress.message}
+            </p>
+          )}
+        </>
+      )}
       {error && <ErrorMessage message={error} />}
-      {data && <DataTable columns={COLUMNS} data={data} />}
+      <DataTable columns={COLUMNS} data={devices.length > 0 ? devices : data ?? []} />
     </div>
   );
 };
