@@ -20,8 +20,8 @@ pub async fn start(
 ) -> Result<String, AppError> {
     // Check if already running
     {
-        let running = state.arp_spoof_running.lock().await;
-        if *running {
+        let runtime_state = state.arp_spoof_state.lock().await;
+        if runtime_state.is_running {
             return Err(AppError::ArpSpoof("ARP spoofing is already running".to_string()));
         }
     }
@@ -46,12 +46,14 @@ pub async fn start(
             AppError::ArpSpoof(format!("Could not resolve MAC for target {}", target_ip))
         })?;
 
-    let running_flag = state.arp_spoof_running.clone();
-
-    // Set running
+    let runtime_state = state.arp_spoof_state.clone();
+    let pcap_path = format!("{}/{}", pcap_dir, pcap_filename);
     {
-        let mut running = running_flag.lock().await;
-        *running = true;
+        let mut state_guard = runtime_state.lock().await;
+        state_guard.is_running = true;
+        state_guard.packets_captured = 0;
+        state_guard.pcap_path = Some(pcap_path.clone());
+        state_guard.last_error = None;
     }
 
     let target_ip_owned = target_ip.to_string();
@@ -70,16 +72,15 @@ pub async fn start(
             reset_count,
             &pcap_dir,
             &pcap_filename,
-            running_flag.clone(),
+            runtime_state.clone(),
         )
         .await;
 
-        // Ensure flag is cleared
-        let mut running = running_flag.lock().await;
-        *running = false;
-
+        let mut state_guard = runtime_state.lock().await;
+        state_guard.is_running = false;
         if let Err(e) = result {
             log::error!("ARP spoof error: {}", e);
+            state_guard.last_error = Some(e.to_string());
         }
     });
 
@@ -88,23 +89,25 @@ pub async fn start(
 
 /// Stop ARP spoofing.
 pub async fn stop(state: &AppState) -> Result<ArpSpoofStatus, AppError> {
-    let mut running = state.arp_spoof_running.lock().await;
-    *running = false;
+    let mut runtime_state = state.arp_spoof_state.lock().await;
+    runtime_state.is_running = false;
 
     Ok(ArpSpoofStatus {
-        is_running: false,
-        packets_captured: 0,
-        pcap_path: None,
+        is_running: runtime_state.is_running,
+        packets_captured: runtime_state.packets_captured,
+        pcap_path: runtime_state.pcap_path.clone(),
+        last_error: runtime_state.last_error.clone(),
     })
 }
 
 /// Get current ARP spoof status.
 pub async fn status(state: &AppState) -> Result<ArpSpoofStatus, AppError> {
-    let is_running = *state.arp_spoof_running.lock().await;
+    let runtime_state = state.arp_spoof_state.lock().await;
     Ok(ArpSpoofStatus {
-        is_running,
-        packets_captured: 0,
-        pcap_path: None,
+        is_running: runtime_state.is_running,
+        packets_captured: runtime_state.packets_captured,
+        pcap_path: runtime_state.pcap_path.clone(),
+        last_error: runtime_state.last_error.clone(),
     })
 }
 
@@ -120,7 +123,7 @@ async fn run_spoof(
     reset_count: u32,
     pcap_dir: &str,
     pcap_filename: &str,
-    running: Arc<Mutex<bool>>,
+    runtime_state: Arc<Mutex<crate::ArpSpoofRuntimeState>>,
 ) -> Result<(), AppError> {
     let target_ip_parsed: Ipv4Addr = target_ip
         .parse()
@@ -175,8 +178,8 @@ async fn run_spoof(
     loop {
         // Check if still running
         {
-            let is_running = running.lock().await;
-            if !*is_running {
+            let state_guard = runtime_state.lock().await;
+            if !state_guard.is_running {
                 break;
             }
         }
@@ -204,6 +207,8 @@ async fn run_spoof(
             Ok(pkt) => {
                 savefile.write(&pkt);
                 captured += 1;
+                let mut state_guard = runtime_state.lock().await;
+                state_guard.packets_captured = captured as u64;
                 if captured >= packet_count {
                     break;
                 }
@@ -236,6 +241,9 @@ async fn run_spoof(
             gateway_ip_parsed,
         );
     }
+
+    let mut state_guard = runtime_state.lock().await;
+    state_guard.is_running = false;
 
     Ok(())
 }
