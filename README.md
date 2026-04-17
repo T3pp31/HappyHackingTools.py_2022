@@ -160,3 +160,24 @@ npx tauri build
 | `[vendor]` | `use_local_oui` | ローカル OUI データベースの使用 |
 | `[paths]` | `pcap_output_dir` | キャプチャファイル出力先 |
 | `[paths]` | `pcap_filename` | キャプチャファイル名 |
+
+### 機能フラグ（段階移行）
+
+Python/外部CLI依存を段階的に削減するため、以下のフラグを用意しています。
+
+- Cargo feature（`src-tauri/Cargo.toml`）
+  - `python-runtime-free`（デフォルト）
+  - `external-cli-fallback`（必要時のみ有効化）
+- 設定ファイル（`src-tauri/config/default.toml`）
+  - `[feature_flags] prefer_rust_implementation`
+  - `[feature_flags] enable_python_bridge`
+  - `[network] enable_external_cli_fallback`
+
+依存棚卸しと置換計画は `docs/dependency-matrix.md` を参照してください。
+
+## リリース判定
+
+リリース判定条件として **「追加インストール不要」** を必須とします。
+
+- デフォルトビルド/デフォルト設定で Python ランタイム不要
+- 初回起動時に Python / pip の追加インストール不要
