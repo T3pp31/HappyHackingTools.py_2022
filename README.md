@@ -177,4 +177,4 @@ npx tauri build
 
 補足:
 - 現在の設定は、`dialog:allow-open` のみを許可し、`fs:default` など広い権限を付与しない構成です。
-- 外部リンク導線は Npcap ダイアログに限定し、それ以外で shell 経由のオープンを許可しない設定です。
+- 外部リンク導線は Npcap ダイアログに限定し、shell 側も `https://npcap.com/#download` のみ許可する設定です。
