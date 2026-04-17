@@ -23,6 +23,7 @@ export interface ArpSpoofStatus {
   is_running: boolean;
   packets_captured: number;
   pcap_path: string | null;
+  last_error: string | null;
 }
 
 export interface BinaryContent {

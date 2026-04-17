@@ -8,10 +8,18 @@ use config::AppConfig;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
+#[derive(Debug, Clone, Default)]
+pub struct ArpSpoofRuntimeState {
+    pub is_running: bool,
+    pub packets_captured: u64,
+    pub pcap_path: Option<String>,
+    pub last_error: Option<String>,
+}
+
 pub struct AppState {
     pub config: AppConfig,
     pub http_client: reqwest::Client,
-    pub arp_spoof_running: Arc<Mutex<bool>>,
+    pub arp_spoof_state: Arc<Mutex<ArpSpoofRuntimeState>>,
 }
 
 pub fn run() {
@@ -20,7 +28,7 @@ pub fn run() {
     let state = AppState {
         config,
         http_client,
-        arp_spoof_running: Arc::new(Mutex::new(false)),
+        arp_spoof_state: Arc::new(Mutex::new(ArpSpoofRuntimeState::default())),
     };
 
     tauri::Builder::default()

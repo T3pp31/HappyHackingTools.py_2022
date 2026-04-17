@@ -9,6 +9,7 @@ pub struct ArpSpoofStatus {
     pub is_running: bool,
     pub packets_captured: u64,
     pub pcap_path: Option<String>,
+    pub last_error: Option<String>,
 }
 
 #[tauri::command]

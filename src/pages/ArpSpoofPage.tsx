@@ -86,6 +86,11 @@ export const ArpSpoofPage: React.FC = () => {
               Saved to: {status.data.pcap_path}
             </p>
           )}
+          {status.data.last_error && (
+            <p style={{ fontSize: "13px", color: "var(--danger)" }}>
+              Last error: {status.data.last_error}
+            </p>
+          )}
         </div>
       )}
       <NpcapDialog
