@@ -7,6 +7,13 @@ const README_PATH = resolve(import.meta.dirname, "..", "README.md");
 const readme = readFileSync(README_PATH, "utf-8");
 
 describe("README consistency", () => {
+  it("一般利用者向けの Windows 配布導線が記載されていること", () => {
+    assert.match(readme, /HappyHackingTools-bootstrapper\.exe/);
+    assert.match(readme, /GitHub Releases/);
+    assert.match(readme, /Npcap は初回必須ではありません/);
+    assert.match(readme, /CONTRIBUTING\.md/);
+  });
+
   it("主要な設定項目が README に記載されていること", () => {
     assert.match(readme, /reset_packet_count/);
     assert.match(readme, /progress_report_interval/);
@@ -31,6 +38,15 @@ describe("README consistency", () => {
     assert.match(readme, /Vitest \+ Testing Library \+ happy-dom \/ pytest \/ node:test/);
     assert.match(readme, /uv run pytest tests\/test_build_rs\.py -v/);
     assert.match(readme, /node --test tests\/readmeConsistency\.test\.mjs/);
+    assert.match(readme, /node --test tests\/buildDelayLoadConsistency\.test\.mjs/);
+    assert.match(readme, /node --test tests\/releaseWorkflowConsistency\.test\.mjs/);
+    assert.match(readme, /cargo test --manifest-path tools\/windows-bootstrapper\/Cargo\.toml/);
     assert.match(readme, /Vitest \/ pytest \/ node:test のテスト/);
+  });
+
+  it("Npcap 未導入時でも起動は維持する前提が記載されていること", () => {
+    assert.match(readme, /アプリ起動自体は可能/);
+    assert.match(readme, /wpcap\.dll/);
+    assert.match(readme, /Packet\.dll/);
   });
 });

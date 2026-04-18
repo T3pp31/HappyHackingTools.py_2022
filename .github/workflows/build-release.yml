@@ -33,7 +33,9 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
-          workspaces: "./src-tauri -> target"
+          workspaces: |
+            ./src-tauri -> target
+            ./tools/windows-bootstrapper -> target
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -71,6 +73,19 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Build Windows bootstrapper
+        if: matrix.target == 'windows'
+        shell: powershell
+        env:
+          BOOTSTRAPPER_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          BOOTSTRAPPER_REPOSITORY_NAME: ${{ github.event.repository.name }}
+          BOOTSTRAPPER_RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          cargo build --manifest-path tools/windows-bootstrapper/Cargo.toml --release
+          Copy-Item `
+            "tools/windows-bootstrapper\target\release\happyhackingtools-bootstrapper.exe" `
+            "$env:RUNNER_TEMP\HappyHackingTools-bootstrapper.exe"
+
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0.6
         env:
@@ -78,6 +93,18 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "HappyHackingTools ${{ github.ref_name }}"
-          releaseBody: "Release ${{ github.ref_name }}"
+          releaseBody: |
+            Release ${{ github.ref_name }}
+
+            Windows を利用する一般ユーザーは `HappyHackingTools-bootstrapper.exe` の利用を推奨します。
+            Npcap は初回必須ではなく、Npcap 依存機能を使う際にアプリ内で案内します。
           releaseDraft: true
           prerelease: false
+
+      - name: Upload Windows bootstrapper to release
+        if: matrix.target == 'windows'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: ${{ runner.temp }}/HappyHackingTools-bootstrapper.exe
+          fail_on_unmatched_files: true

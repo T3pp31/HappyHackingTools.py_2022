@@ -1,4 +1,5 @@
 /// Npcap SDK の環境変数名
+#[cfg(target_os = "windows")]
 const NPCAP_SDK_ENV: &str = "NPCAP_SDK_DIR";
 
 /// Windows 向けデフォルト検索パス候補（Lib/x64 サブディレクトリ付き）
@@ -7,6 +8,13 @@ const NPCAP_DEFAULT_SEARCH_PATHS: &[&str] = &[
     r"C:\npcap-sdk\Lib\x64",
     r"C:\Program Files\Npcap SDK\Lib\x64",
 ];
+
+/// Windows 実行時に遅延ロードする DLL 一覧。
+///
+/// - `wpcap.dll`: `pcap` クレートが参照する高レベル API
+/// - `Packet.dll`: `pnet_datalink` が参照する低レベル API
+#[cfg(target_os = "windows")]
+const WINDOWS_DELAY_LOAD_DLLS: &[&str] = &["wpcap.dll", "Packet.dll"];
 
 /// Windows 環境で `USERPROFILE` 配下の候補パスを返す
 #[cfg(target_os = "windows")]
@@ -92,8 +100,9 @@ fn configure_npcap_link_search() {}
 /// Windows: wpcap.dll を遅延ロードに設定し、未インストール時もアプリが起動できるようにする
 #[cfg(target_os = "windows")]
 fn configure_delay_load() {
-    println!("cargo:rustc-link-arg=/DELAYLOAD:wpcap.dll");
-    println!("cargo:rustc-link-arg=/DELAYLOAD:Packet.dll");
+    for dll_name in WINDOWS_DELAY_LOAD_DLLS {
+        println!("cargo:rustc-link-arg=/DELAYLOAD:{dll_name}");
+    }
     println!("cargo:rustc-link-lib=delayimp");
 }
 

@@ -5,6 +5,21 @@
 
 A desktop network security toolkit built with Rust + Tauri v2 and React/TypeScript frontend, designed for penetration testing and CTF practice.
 
+## インストール
+
+### Windows 利用者向け
+
+GitHub Releases に添付される `HappyHackingTools-bootstrapper.exe` の利用を推奨します。  
+bootstrapper は Windows 用インストーラーを取得して起動します。
+
+- Npcap は初回必須ではありません
+- ARP Spoof など Npcap 依存機能を開く時にアプリ内でダウンロード導線を案内します
+- 上級者向けには Tauri が生成する Windows インストーラーも併せて配布します
+
+### 開発者・Contributor 向け
+
+開発環境のセットアップ手順は [CONTRIBUTING.md](./CONTRIBUTING.md) を参照してください。
+
 ## 注意事項 / Disclaimer
 
 ペネトレーション・CTF目的に作成しているので、第三者に対する攻撃に使用しないようにしてください。
@@ -81,13 +96,15 @@ HappyHackingTools.py_2022/
 
 ## 動作環境
 
-### 必須要件
+### 開発時の要件
 
 - **Node.js** (npm が利用可能であること)
 - **Rust** (Edition 2021, MSRV 1.77.2 以上)
 - **Npcap** (Windows でパケットキャプチャ機能を使用する場合)
   - Npcap 本体: https://npcap.com/#download
   - Npcap SDK: ビルド時に必要
+
+Windows 版は `wpcap.dll` / `Packet.dll` を遅延ロードするため、Npcap ランタイムが未導入でもアプリ起動自体は可能です。Npcap 依存機能ではダウンロード導線を案内します。
 
 ### Npcap SDK のセットアップ (Windows)
 
@@ -107,31 +124,12 @@ Npcap SDK は以下のいずれかの方法で配置してください。
 
 ### 対応 OS
 
-- Windows (Npcap 必須)
+- Windows (アプリ起動は可能。ARP Spoof などの Npcap 依存機能には Npcap が必要)
 - Linux / macOS (libpcap が必要)
 
-## セットアップ
+## 開発
 
-### 1. 依存パッケージのインストール
-
-```bash
-npm install
-```
-
-### 2. 開発サーバーの起動
-
-```bash
-npx tauri dev
-```
-
-開発モードではフロントエンドは `http://localhost:5173` で動作し、Tauri がネイティブウィンドウで表示します。
-
-### 3. ビルド (リリース)
-
-```bash
-npx tauri build
-```
-
+`npm ci`、`npx tauri dev`、`npx tauri build` などの開発者向け手順は [CONTRIBUTING.md](./CONTRIBUTING.md) に集約しています。  
 ビルド成果物は `src-tauri/target/release/` に出力されます。
 
 ## 開発コマンド
@@ -147,6 +145,9 @@ npx tauri build
 | `npx vitest --coverage` | カバレッジ付きテスト実行 |
 | `uv run pytest tests/test_build_rs.py -v` | `build.rs` の構造検証 |
 | `node --test tests/readmeConsistency.test.mjs` | README 整合性チェック |
+| `node --test tests/buildDelayLoadConsistency.test.mjs` | 遅延ロード設定の回帰チェック |
+| `node --test tests/releaseWorkflowConsistency.test.mjs` | Release / Contributor 文書の整合性チェック |
+| `cargo test --manifest-path tools/windows-bootstrapper/Cargo.toml` | Windows bootstrapper の単体テスト |
 
 ## 設定
 

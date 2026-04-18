@@ -1,0 +1,25 @@
+app_name = "HappyHackingTools"
+github_api_base = "https://api.github.com"
+repository_owner = "T3pp31"
+repository_name = "HappyHackingTools.py_2022"
+default_release_tag = "latest"
+user_agent = "HappyHackingTools-Bootstrapper/1.0"
+download_directory_name = "HappyHackingTools"
+asset_name_contains = ["happyhackingtools"]
+excluded_asset_name_contains = ["bootstrapper", ".sig", ".zip", ".tar"]
+preferred_extensions = [".msi", ".exe"]
+launch_candidates = [
+  "%LOCALAPPDATA%/Programs/HappyHackingTools/HappyHackingTools.exe",
+  "%ProgramFiles%/HappyHackingTools/HappyHackingTools.exe",
+]
+
+[message]
+welcome = "HappyHackingTools Windows セットアップを開始します。"
+fetch_release = "GitHub Release の配布情報を確認しています..."
+download_start = "Windows インストーラーをダウンロードしています..."
+download_complete = "ダウンロードが完了しました。インストーラーを起動します。"
+installer_complete = "インストールが完了しました。"
+installer_cancelled = "インストーラーがキャンセルされました。"
+launch_prompt = "HappyHackingTools を起動しますか？ [Y/n]: "
+open_release_prompt = "GitHub Release ページを開きますか？ [Y/n]: "
+exit_prompt = "Enter キーで終了します。"
