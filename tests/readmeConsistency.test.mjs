@@ -40,8 +40,9 @@ describe("README consistency", () => {
     assert.match(readme, /node --test tests\/readmeConsistency\.test\.mjs/);
     assert.match(readme, /node --test tests\/buildDelayLoadConsistency\.test\.mjs/);
     assert.match(readme, /node --test tests\/releaseWorkflowConsistency\.test\.mjs/);
+    assert.match(readme, /node --test tests\/repoCleanupConsistency\.test\.mjs/);
     assert.match(readme, /cargo test --manifest-path tools\/windows-bootstrapper\/Cargo\.toml/);
-    assert.match(readme, /Vitest \/ pytest \/ node:test のテスト/);
+    assert.match(readme, /Vitest \/ node:test \/ 補助検証テスト/);
   });
 
   it("Npcap 未導入時でも起動は維持する前提が記載されていること", () => {

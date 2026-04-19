@@ -3,12 +3,18 @@ node_modules/
 
 # Build output
 dist/
+coverage/
 src-tauri/target/
 tools/**/target/
 
 # Environment
 .env
 .env.*
+
+# Python
+.pytest_cache/
+__pycache__/
+*.py[cod]
 
 # OS
 .DS_Store

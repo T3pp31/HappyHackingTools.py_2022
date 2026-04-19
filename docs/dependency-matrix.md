@@ -1,14 +1,13 @@
 # Dependency Matrix（Rust移行棚卸し）
 
-最終更新日: 2026-04-17
+最終更新日: 2026-04-19
 
 ## 目的
 
-本ドキュメントは、現行機能を以下の3区分で棚卸しし、Rust化の進捗と置換方針を明確化するためのものです。
+本ドキュメントは、現行機能を以下の2区分で棚卸しし、Rust化の進捗と置換方針を明確化するためのものです。
 
 1. **完全Rust化済み**
-2. **Python呼び出し残存**
-3. **外部CLI依存**
+2. **外部CLI依存**
 
 また、段階移行のために機能フラグを定義し、最終的に **Pythonランタイム不要ビルド（`python-runtime-free`）をデフォルト** とする方針を管理します。
 
@@ -27,16 +26,12 @@ rg -n "subprocess|python3?|pip3?|PyO3|pyo3|std::process::Command::new|child_proc
 - `src-tauri/src/network/interface.rs`
   - `netsh` 呼び出し（Windows）
   - `ip -4 addr show` 呼び出し（Linux系）
-- `notebooks/birdclef2026-public-blend-4-model.ipynb`
-  - `pip install` / `python *.py` の実行セル（研究用ノートブック）
-- `notebooks/kernel-metadata.json`
-  - Pythonカーネル定義
 
 > 注記: `tokio::spawn` は Rust 非同期タスクであり、Python/外部CLI依存には該当しません。
 
 ---
 
-## 3区分棚卸し
+## 2区分棚卸し
 
 ## 1) 完全Rust化済み
 
@@ -48,16 +43,7 @@ rg -n "subprocess|python3?|pip3?|PyO3|pyo3|std::process::Command::new|child_proc
 | バイナリビューア | Rust + Tauri command | Python非依存 |
 | Npcapチェック | Rust | Python非依存 |
 
-## 2) Python呼び出し残存
-
-| 箇所 | 種別 | 実行経路 | 優先度 | 置換方針 |
-|---|---|---|---|---|
-| `notebooks/birdclef2026-public-blend-4-model.ipynb` | `pip` / `python` セル | 製品実行経路外（ノートブック） | 低 | プロダクト外として分離。必要なら `examples/` へ移設し、CI対象外を明記 |
-| `notebooks/kernel-metadata.json` | Pythonカーネル定義 | 製品実行経路外 | 低 | ノートブック用途限定として維持 |
-
-> 現時点で **Tauriアプリ本体の実行経路に Python 呼び出しはありません**。
-
-## 3) 外部CLI依存
+## 2) 外部CLI依存
 
 | 箇所 | コマンド | 現在の用途 | 優先度 | Rustクレート置換方針 |
 |---|---|---|---|---|
@@ -65,6 +51,12 @@ rg -n "subprocess|python3?|pip3?|PyO3|pyo3|std::process::Command::new|child_proc
 | `src-tauri/src/network/interface.rs`（Linux） | `ip -4 addr show` | インターフェース名補完 | 中 | `rtnetlink` または `nix` + netlink 実装へ置換 |
 
 ---
+
+## Python整理メモ
+
+- 旧 Python ノートブックと関連メタデータは、アプリ本体と無関係だったためリポジトリから削除済み
+- 現在の Python 利用は `tests/test_build_rs.py` による `build.rs` の構造検証のみ
+- **Tauriアプリ本体の実行経路に Python 呼び出しはありません**
 
 ## 段階移行フラグ方針
 

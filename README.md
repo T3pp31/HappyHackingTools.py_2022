@@ -83,9 +83,8 @@ HappyHackingTools.py_2022/
 │   │   └── default.toml          # デフォルト設定ファイル
 │   ├── capabilities/             # Tauri v2 権限設定
 │   └── tauri.conf.json           # Tauri 設定
-├── tests/                        # Vitest / pytest / node:test のテスト
+├── tests/                        # Vitest / node:test / 補助検証テスト
 ├── docs/                         # 補足ドキュメント
-├── notebooks/                    # 実験・検証用ノートブック
 ├── scripts/                      # ビルドスクリプト
 │   └── setup-npcap-sdk.ps1       # Npcap SDK セットアップ
 ├── package.json
@@ -147,6 +146,7 @@ Npcap SDK は以下のいずれかの方法で配置してください。
 | `node --test tests/readmeConsistency.test.mjs` | README 整合性チェック |
 | `node --test tests/buildDelayLoadConsistency.test.mjs` | 遅延ロード設定の回帰チェック |
 | `node --test tests/releaseWorkflowConsistency.test.mjs` | Release / Contributor 文書の整合性チェック |
+| `node --test tests/repoCleanupConsistency.test.mjs` | 不要生成物・旧資産の再混入防止チェック |
 | `cargo test --manifest-path tools/windows-bootstrapper/Cargo.toml` | Windows bootstrapper の単体テスト |
 
 ## 設定
