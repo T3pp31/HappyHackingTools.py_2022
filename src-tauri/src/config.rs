@@ -43,7 +43,6 @@ pub struct NetworkConfig {
 #[derive(Debug, Deserialize, Clone)]
 pub struct FeatureFlagsConfig {
     pub prefer_rust_implementation: bool,
-    pub enable_python_bridge: bool,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -101,7 +100,6 @@ impl Default for AppConfig {
             },
             feature_flags: FeatureFlagsConfig {
                 prefer_rust_implementation: true,
-                enable_python_bridge: false,
             },
             paths: PathsConfig {
                 pcap_output_dir: "captured".to_string(),

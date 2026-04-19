@@ -37,7 +37,7 @@ The owner of this repository assumes no responsibility whatsoever.
 | フロントエンド | React 18 + TypeScript 5.6 |
 | ビルドツール | Vite 5 |
 | ルーティング | React Router v7 |
-| テスト | Vitest + Testing Library + happy-dom / pytest / node:test |
+| テスト | Vitest + Testing Library + happy-dom / node:test |
 | パケットキャプチャ | pnet / pcap (Npcap SDK) |
 | 設定管理 | TOML |
 
@@ -142,7 +142,7 @@ Npcap SDK は以下のいずれかの方法で配置してください。
 | `npm run lint` | ESLint によるコード検査 |
 | `npx vitest` | テスト実行 |
 | `npx vitest --coverage` | カバレッジ付きテスト実行 |
-| `uv run pytest tests/test_build_rs.py -v` | `build.rs` の構造検証 |
+| `node --test tests/buildRsConsistency.test.mjs` | `build.rs` の構造検証 |
 | `node --test tests/readmeConsistency.test.mjs` | README 整合性チェック |
 | `node --test tests/buildDelayLoadConsistency.test.mjs` | 遅延ロード設定の回帰チェック |
 | `node --test tests/releaseWorkflowConsistency.test.mjs` | Release / Contributor 文書の整合性チェック |
@@ -171,7 +171,6 @@ Npcap SDK は以下のいずれかの方法で配置してください。
 | `[network]` | `udp_probe_target` | ネットワーク情報取得時の UDP プローブ先 |
 | `[network]` | `enable_external_cli_fallback` | `netsh` / `ip` フォールバックの有効化 |
 | `[feature_flags]` | `prefer_rust_implementation` | Rust 実装を優先するか |
-| `[feature_flags]` | `enable_python_bridge` | Python ブリッジ機能の有効化 |
 | `[paths]` | `pcap_output_dir` | キャプチャファイル出力先 |
 | `[paths]` | `pcap_filename` | キャプチャファイル名 |
 

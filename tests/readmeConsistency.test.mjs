@@ -23,7 +23,6 @@ describe("README consistency", () => {
     assert.match(readme, /udp_probe_target/);
     assert.match(readme, /enable_external_cli_fallback/);
     assert.match(readme, /prefer_rust_implementation/);
-    assert.match(readme, /enable_python_bridge/);
   });
 
   it("権限設定の説明が現行実装と一致していること", () => {
@@ -35,8 +34,8 @@ describe("README consistency", () => {
   });
 
   it("テスト構成の説明に補助テストが含まれていること", () => {
-    assert.match(readme, /Vitest \+ Testing Library \+ happy-dom \/ pytest \/ node:test/);
-    assert.match(readme, /uv run pytest tests\/test_build_rs\.py -v/);
+    assert.match(readme, /Vitest \+ Testing Library \+ happy-dom \/ node:test/);
+    assert.match(readme, /node --test tests\/buildRsConsistency\.test\.mjs/);
     assert.match(readme, /node --test tests\/readmeConsistency\.test\.mjs/);
     assert.match(readme, /node --test tests\/buildDelayLoadConsistency\.test\.mjs/);
     assert.match(readme, /node --test tests\/releaseWorkflowConsistency\.test\.mjs/);
