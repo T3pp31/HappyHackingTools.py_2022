@@ -53,5 +53,6 @@ npx tauri dev
 
 ## テスト
 
-- `node --test tests/buildRsConsistency.test.mjs tests/readmeConsistency.test.mjs tests/releaseWorkflowConsistency.test.mjs tests/repoCleanupConsistency.test.mjs`
+- `npm run test`
+- `node --test tests/buildRsConsistency.test.mjs tests/readmeConsistency.test.mjs tests/releaseWorkflowConsistency.test.mjs tests/repoCleanupConsistency.test.mjs tests/toolingConfigConsistency.test.mjs`
 - `cargo test --manifest-path tools/windows-bootstrapper/Cargo.toml`

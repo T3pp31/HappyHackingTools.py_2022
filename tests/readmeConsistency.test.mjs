@@ -36,10 +36,13 @@ describe("README consistency", () => {
   it("テスト構成の説明に補助テストが含まれていること", () => {
     assert.match(readme, /Vitest \+ Testing Library \+ happy-dom \/ node:test/);
     assert.match(readme, /node --test tests\/buildRsConsistency\.test\.mjs/);
+    assert.match(readme, /npm run test/);
+    assert.match(readme, /npm run test:coverage/);
     assert.match(readme, /node --test tests\/readmeConsistency\.test\.mjs/);
     assert.match(readme, /node --test tests\/buildDelayLoadConsistency\.test\.mjs/);
     assert.match(readme, /node --test tests\/releaseWorkflowConsistency\.test\.mjs/);
     assert.match(readme, /node --test tests\/repoCleanupConsistency\.test\.mjs/);
+    assert.match(readme, /node --test tests\/toolingConfigConsistency\.test\.mjs/);
     assert.match(readme, /cargo test --manifest-path tools\/windows-bootstrapper\/Cargo\.toml/);
     assert.match(readme, /Vitest \/ node:test \/ 補助検証テスト/);
   });

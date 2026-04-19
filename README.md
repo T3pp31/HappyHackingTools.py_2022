@@ -87,10 +87,13 @@ HappyHackingTools.py_2022/
 ├── docs/                         # 補足ドキュメント
 ├── scripts/                      # ビルドスクリプト
 │   └── setup-npcap-sdk.ps1       # Npcap SDK セットアップ
+├── tooling/                      # TypeScript / Vite / Vitest 設定
+│   ├── vite.config.ts
+│   ├── vitest.config.ts
+│   ├── tsconfig.app.json
+│   └── tsconfig.node.json
 ├── package.json
-├── vite.config.ts
-├── vitest.config.ts
-└── tsconfig.json
+└── tsconfig.json                # TypeScript project references
 ```
 
 ## 動作環境
@@ -140,13 +143,14 @@ Npcap SDK は以下のいずれかの方法で配置してください。
 | `npx tauri build` | リリースビルド |
 | `npm run build` | フロントエンドのみビルド |
 | `npm run lint` | ESLint によるコード検査 |
-| `npx vitest` | テスト実行 |
-| `npx vitest --coverage` | カバレッジ付きテスト実行 |
+| `npm run test` | Vitest テスト実行 |
+| `npm run test:coverage` | カバレッジ付き Vitest 実行 |
 | `node --test tests/buildRsConsistency.test.mjs` | `build.rs` の構造検証 |
 | `node --test tests/readmeConsistency.test.mjs` | README 整合性チェック |
 | `node --test tests/buildDelayLoadConsistency.test.mjs` | 遅延ロード設定の回帰チェック |
 | `node --test tests/releaseWorkflowConsistency.test.mjs` | Release / Contributor 文書の整合性チェック |
 | `node --test tests/repoCleanupConsistency.test.mjs` | 不要生成物・旧資産の再混入防止チェック |
+| `node --test tests/toolingConfigConsistency.test.mjs` | `tooling/` 配置の整合性チェック |
 | `cargo test --manifest-path tools/windows-bootstrapper/Cargo.toml` | Windows bootstrapper の単体テスト |
 
 ## 設定
