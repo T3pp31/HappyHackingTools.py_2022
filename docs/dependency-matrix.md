@@ -1,25 +1,24 @@
 # Dependency Matrix（Rust移行棚卸し）
 
-最終更新日: 2026-04-17
+最終更新日: 2026-04-19
 
 ## 目的
 
-本ドキュメントは、現行機能を以下の3区分で棚卸しし、Rust化の進捗と置換方針を明確化するためのものです。
+本ドキュメントは、現行機能を以下の2区分で棚卸しし、Rust化完了後に残っている依存だけを明確化するためのものです。
 
 1. **完全Rust化済み**
-2. **Python呼び出し残存**
-3. **外部CLI依存**
+2. **外部CLI依存**
 
-また、段階移行のために機能フラグを定義し、最終的に **Pythonランタイム不要ビルド（`python-runtime-free`）をデフォルト** とする方針を管理します。
+現在、アプリ本体は Rust + Tauri に統一されており、残る移行課題は外部CLIフォールバックの整理です。
 
 ---
 
-## 呼び出し検索結果（`subprocess` / `python` / `pip`）
+## 呼び出し検索結果（外部CLI / child process）
 
 ### 検索コマンド
 
 ```bash
-rg -n "subprocess|python3?|pip3?|PyO3|pyo3|std::process::Command::new|child_process|spawn\(" --glob '!coverage/**' --glob '!src-tauri/target/**'
+rg -n "std::process::Command::new|child_process|spawn\(" --glob '!coverage/**' --glob '!src-tauri/target/**'
 ```
 
 ### ヒット概要
@@ -27,16 +26,12 @@ rg -n "subprocess|python3?|pip3?|PyO3|pyo3|std::process::Command::new|child_proc
 - `src-tauri/src/network/interface.rs`
   - `netsh` 呼び出し（Windows）
   - `ip -4 addr show` 呼び出し（Linux系）
-- `notebooks/birdclef2026-public-blend-4-model.ipynb`
-  - `pip install` / `python *.py` の実行セル（研究用ノートブック）
-- `notebooks/kernel-metadata.json`
-  - Pythonカーネル定義
 
-> 注記: `tokio::spawn` は Rust 非同期タスクであり、Python/外部CLI依存には該当しません。
+> 注記: `tokio::spawn` は Rust 非同期タスクであり、外部CLI依存には該当しません。
 
 ---
 
-## 3区分棚卸し
+## 2区分棚卸し
 
 ## 1) 完全Rust化済み
 
@@ -48,16 +43,7 @@ rg -n "subprocess|python3?|pip3?|PyO3|pyo3|std::process::Command::new|child_proc
 | バイナリビューア | Rust + Tauri command | Python非依存 |
 | Npcapチェック | Rust | Python非依存 |
 
-## 2) Python呼び出し残存
-
-| 箇所 | 種別 | 実行経路 | 優先度 | 置換方針 |
-|---|---|---|---|---|
-| `notebooks/birdclef2026-public-blend-4-model.ipynb` | `pip` / `python` セル | 製品実行経路外（ノートブック） | 低 | プロダクト外として分離。必要なら `examples/` へ移設し、CI対象外を明記 |
-| `notebooks/kernel-metadata.json` | Pythonカーネル定義 | 製品実行経路外 | 低 | ノートブック用途限定として維持 |
-
-> 現時点で **Tauriアプリ本体の実行経路に Python 呼び出しはありません**。
-
-## 3) 外部CLI依存
+## 2) 外部CLI依存
 
 | 箇所 | コマンド | 現在の用途 | 優先度 | Rustクレート置換方針 |
 |---|---|---|---|---|
@@ -66,12 +52,16 @@ rg -n "subprocess|python3?|pip3?|PyO3|pyo3|std::process::Command::new|child_proc
 
 ---
 
+## Rust移行メモ
+
+- アプリ本体の実行経路は Rust + Tauri のみ
+- `build.rs` の構造検証も `node:test` に移行済み
+- リポジトリ内の Python ファイルは削除済み
+
 ## 段階移行フラグ方針
 
 ### ビルド時フラグ（Cargo features）
 
-- `python-runtime-free`（**default**）
-  - Pythonブリッジを含まないターゲット
 - `external-cli-fallback`（opt-in）
   - `netsh` / `ip` を利用するフォールバックを許可
 
@@ -79,15 +69,14 @@ rg -n "subprocess|python3?|pip3?|PyO3|pyo3|std::process::Command::new|child_proc
 
 - `[feature_flags]`
   - `prefer_rust_implementation = true`
-  - `enable_python_bridge = false`
 - `[network]`
   - `enable_external_cli_fallback = false`
 
 ### 推奨フェーズ
 
-1. **Phase A（現行）**: Rust実装を優先、CLI fallback はビルド/設定の双方で明示的に有効化した場合のみ使用
+1. **Phase A（現行）**: Rust実装を優先し、CLI fallback はビルド/設定の双方で明示的に有効化した場合のみ使用
 2. **Phase B**: Windows/Linux補完ロジックをRustクレートに置換し、`external-cli-fallback` を非推奨化
-3. **Phase C**: `external-cli-fallback` 削除、`python-runtime-free` のみを標準配布
+3. **Phase C**: `external-cli-fallback` を削除し、完全Rust構成のみを標準配布
 
 ---
 
@@ -95,8 +84,8 @@ rg -n "subprocess|python3?|pip3?|PyO3|pyo3|std::process::Command::new|child_proc
 
 以下を満たす場合にリリース可とする。
 
-- デフォルト設定・デフォルト機能で Python ランタイム不要
-- 初回起動時に Python / pip の追加インストール不要
+- デフォルト設定・デフォルト機能で追加ランタイム不要
+- 初回起動時に補助言語ランタイムの追加インストール不要
 - 主要機能（LANスキャン、ポートスキャン、ARP、バイナリビューア、ネットワーク情報）が追加インストール不要で動作
 
 ### 明文化ルール

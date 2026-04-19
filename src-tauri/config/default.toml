@@ -21,7 +21,6 @@ enable_external_cli_fallback = false
 
 [feature_flags]
 prefer_rust_implementation = true
-enable_python_bridge = false
 
 [paths]
 pcap_output_dir = "captured"

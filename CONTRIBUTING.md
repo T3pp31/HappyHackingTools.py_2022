@@ -53,6 +53,5 @@ npx tauri dev
 
 ## テスト
 
-- `node --test tests/readmeConsistency.test.mjs tests/releaseWorkflowConsistency.test.mjs`
+- `node --test tests/buildRsConsistency.test.mjs tests/readmeConsistency.test.mjs tests/releaseWorkflowConsistency.test.mjs tests/repoCleanupConsistency.test.mjs`
 - `cargo test --manifest-path tools/windows-bootstrapper/Cargo.toml`
-- `uv run pytest tests/test_build_rs.py -v`

@@ -13,8 +13,7 @@ name = "happyhacking_tools"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [features]
-default = ["python-runtime-free"]
-python-runtime-free = []
+default = []
 external-cli-fallback = []
 
 [build-dependencies]
