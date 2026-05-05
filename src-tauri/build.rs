@@ -36,14 +36,9 @@ fn configure_npcap_link_search() {
 
     // 1. 環境変数 NPCAP_SDK_DIR が指定されている場合
     if let Ok(sdk_dir) = std::env::var(NPCAP_SDK_ENV) {
-        let lib_path = std::path::PathBuf::from(&sdk_dir)
-            .join("Lib")
-            .join("x64");
+        let lib_path = std::path::PathBuf::from(&sdk_dir).join("Lib").join("x64");
         if lib_path.is_dir() {
-            println!(
-                "cargo:rustc-link-search=native={}",
-                lib_path.display()
-            );
+            println!("cargo:rustc-link-search=native={}", lib_path.display());
             return;
         }
         panic!(
@@ -66,10 +61,7 @@ fn configure_npcap_link_search() {
     // 3. %USERPROFILE%\.npcap-sdk\Lib\x64
     if let Some(path) = userprofile_npcap_path() {
         if path.is_dir() {
-            println!(
-                "cargo:rustc-link-search=native={}",
-                path.display()
-            );
+            println!("cargo:rustc-link-search=native={}", path.display());
             return;
         }
     }
@@ -87,9 +79,7 @@ fn configure_npcap_link_search() {
     if let Some(path) = userprofile_npcap_path() {
         msg.push_str(&format!("   - {}\n", path.display()));
     }
-    msg.push_str(
-        "\nNpcap SDK は https://npcap.com/#download からダウンロードできます。",
-    );
+    msg.push_str("\nNpcap SDK は https://npcap.com/#download からダウンロードできます。");
     panic!("{msg}");
 }
 

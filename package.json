@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

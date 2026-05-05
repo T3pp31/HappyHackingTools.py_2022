@@ -77,8 +77,8 @@ export const PortScanPage: React.FC = () => {
     try {
       const result = await execute({
         ip,
-        port_start: startPort,
-        port_end: endPort,
+        portStart: startPort,
+        portEnd: endPort,
       });
 
       if (result) {

@@ -24,6 +24,7 @@ pub struct ScanConfig {
     pub reset_packet_count: u32,
     pub progress_report_interval: u32,
     pub lan_scan_arp_retry_count: u32,
+    pub lan_scan_concurrency: usize,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -87,6 +88,7 @@ impl Default for AppConfig {
                 reset_packet_count: 5,
                 progress_report_interval: 100,
                 lan_scan_arp_retry_count: 1,
+                lan_scan_concurrency: 32,
             },
             vendor: VendorConfig {
                 api_url: "http://macvendors.co/api/".to_string(),

@@ -14,11 +14,10 @@ pub fn read_file(file_path: &str) -> Result<BinaryContent, AppError> {
         return Err(AppError::File(format!("File not found: {}", file_path)));
     }
 
-    let data =
-        fs::read(path).map_err(|e| AppError::File(format!("Failed to read file: {}", e)))?;
+    let data = fs::read(path).map_err(|e| AppError::File(format!("Failed to read file: {}", e)))?;
 
-    let metadata = fs::metadata(path)
-        .map_err(|e| AppError::File(format!("Failed to get metadata: {}", e)))?;
+    let metadata =
+        fs::metadata(path).map_err(|e| AppError::File(format!("Failed to get metadata: {}", e)))?;
 
     let file_name = path
         .file_name()

@@ -3,6 +3,7 @@ import { Layout } from "./components/Layout/Layout";
 import { HomePage } from "./pages/HomePage";
 import { LanScanPage } from "./pages/LanScanPage";
 import { PortScanPage } from "./pages/PortScanPage";
+import { WebCheckPage } from "./pages/WebCheckPage";
 import { ArpSpoofPage } from "./pages/ArpSpoofPage";
 import { BinaryPage } from "./pages/BinaryPage";
 import { CtfPage } from "./pages/CtfPage";
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/lanscan" element={<LanScanPage />} />
           <Route path="/portscan" element={<PortScanPage />} />
+          <Route path="/web-check" element={<WebCheckPage />} />
           <Route path="/arp-spoof" element={<ArpSpoofPage />} />
           <Route path="/binary" element={<BinaryPage />} />
           <Route path="/ctf" element={<CtfPage />} />

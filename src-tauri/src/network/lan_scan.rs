@@ -1,5 +1,6 @@
 use std::net::Ipv4Addr;
 
+use futures::stream::{self, StreamExt};
 use ipnetwork::Ipv4Network;
 use tauri::{Emitter, Window};
 
@@ -28,48 +29,85 @@ pub async fn scan(
 
     let targets = build_scan_targets(ip, mask, start, end)?;
 
-    let interface_name = &net_info.interface_name;
+    let interface_name = net_info.interface_name;
     let total = targets.len() as u32;
+    let arp_timeout_ms = config.scan.arp_timeout_ms;
+    let arp_retry_count = config.scan.lan_scan_arp_retry_count;
+    let concurrency = config.scan.lan_scan_concurrency.max(1);
+    let vendor_config = config.vendor.clone();
+    let http_client = client.clone();
     let mut devices = Vec::new();
+    let mut completed = 0_u32;
 
-    for (index, target_ip) in targets.into_iter().enumerate() {
-        let target_str = target_ip.to_string();
+    let mut scan_results = stream::iter(targets)
+        .map(|target_ip| {
+            let target_str = target_ip.to_string();
+            let interface_name = interface_name.clone();
+            let vendor_config = vendor_config.clone();
+            let http_client = http_client.clone();
 
-        // Emit progress
+            async move {
+                let mac = tokio::task::spawn_blocking({
+                    let target_str = target_str.clone();
+                    move || {
+                        arp::get_mac(
+                            &target_str,
+                            &interface_name,
+                            arp_timeout_ms,
+                            arp_retry_count,
+                        )
+                    }
+                })
+                .await
+                .map_err(|e| AppError::Scan(format!("ARP task failed: {}", e)))??;
+
+                let Some(mac_addr) = mac else {
+                    return Ok::<(String, Option<DeviceInfo>), AppError>((target_str, None));
+                };
+
+                let hostname_task = tokio::task::spawn_blocking({
+                    let target_str = target_str.clone();
+                    move || lookup_hostname(&target_str)
+                });
+                let vendor_name = vendor::lookup_vendor(&mac_addr, &vendor_config, &http_client)
+                    .await
+                    .unwrap_or(None);
+                let hostname = hostname_task
+                    .await
+                    .map_err(|e| AppError::Scan(format!("Hostname task failed: {}", e)))?;
+
+                let device = DeviceInfo {
+                    ip: target_str.clone(),
+                    mac: Some(mac_addr),
+                    hostname,
+                    vendor_name,
+                };
+
+                Ok((target_str, Some(device)))
+            }
+        })
+        .buffer_unordered(concurrency);
+
+    while let Some(result) = scan_results.next().await {
+        completed += 1;
+        let (target_str, device) = result?;
+
         let _ = window.emit(
             "scan-progress",
             serde_json::json!({
-                "current": index as u32 + 1,
+                "current": completed,
                 "total": total,
-                "message": format!("Scanning {}", target_str),
+                "message": format!("Scanned {}", target_str),
             }),
         );
 
-        let mac = arp::get_mac(
-            &target_str,
-            interface_name,
-            config.scan.arp_timeout_ms,
-            config.scan.lan_scan_arp_retry_count,
-        )?;
-
-        if let Some(ref mac_addr) = mac {
-            let hostname = lookup_hostname(&target_str);
-            let vendor_name = vendor::lookup_vendor(mac_addr, &config.vendor, client)
-                .await
-                .unwrap_or(None);
-
-            let device = DeviceInfo {
-                ip: target_str,
-                mac: Some(mac_addr.clone()),
-                hostname,
-                vendor_name,
-            };
-
-            // Emit device found event
+        if let Some(device) = device {
             let _ = window.emit("device-found", &device);
             devices.push(device);
         }
     }
+
+    devices.sort_by_key(|device| device.ip.parse::<Ipv4Addr>().ok());
 
     Ok(devices)
 }

@@ -44,6 +44,7 @@ pub fn run() {
             commands::arp_spoof::get_arp_spoof_status,
             commands::binary::read_binary_file,
             commands::npcap::check_npcap,
+            commands::web_check::web_check,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

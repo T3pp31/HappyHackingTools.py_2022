@@ -12,7 +12,7 @@ export const BinaryPage: React.FC = () => {
   const handleSelectFile = async () => {
     const selected = await open({ multiple: false });
     if (selected) {
-      execute({ file_path: selected as string });
+      execute({ filePath: selected as string });
     }
   };
 

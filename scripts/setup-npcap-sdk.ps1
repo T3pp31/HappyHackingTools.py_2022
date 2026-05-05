@@ -1,90 +1,90 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Npcap SDK をダウンロード・展開し、環境変数 NPCAP_SDK_DIR をセットする。
+    Download and install the Npcap SDK, then set NPCAP_SDK_DIR.
 .DESCRIPTION
-    build.rs が NPCAP_SDK_DIR を読んで cargo:rustc-link-search を出力するため、
-    このスクリプトでローカル開発環境を準備する。
+    build.rs reads NPCAP_SDK_DIR and emits cargo:rustc-link-search.
+    This script prepares a local Windows development environment.
 #>
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-# ---------------------------------------------------------------------------
-# 設定値（変更が必要な場合はここを編集）
-# ---------------------------------------------------------------------------
-$SdkVersion   = "1.13"
-$SdkUrl       = "https://npcap.com/dist/npcap-sdk-$SdkVersion.zip"
-$InstallPath  = "C:\npcap-sdk"
-$EnvVarName   = "NPCAP_SDK_DIR"
-$ZipPath      = Join-Path $env:TEMP "npcap-sdk-$SdkVersion.zip"
+$SdkVersion = "1.13"
+$SdkUrl = "https://npcap.com/dist/npcap-sdk-$SdkVersion.zip"
+$InstallPath = "C:\npcap-sdk"
+$EnvVarName = "NPCAP_SDK_DIR"
+$ZipPath = Join-Path $env:TEMP "npcap-sdk-$SdkVersion.zip"
 
-# ---------------------------------------------------------------------------
-# メイン処理
-# ---------------------------------------------------------------------------
-function Main {
-    # 既にインストール済みか確認
-    if (Test-Path $InstallPath) {
-        Write-Host "[INFO] $InstallPath は既に存在します。"
-        $answer = Read-Host "上書きしますか？ (y/N)"
-        if ($answer -ne "y") {
-            Write-Host "[INFO] スキップしました。"
-            Set-EnvVar
-            return
-        }
-        Remove-Item -Recurse -Force $InstallPath
-        Write-Host "[INFO] 既存ディレクトリを削除しました。"
+function Set-NpcapSdkEnvVar {
+    $currentValue = [System.Environment]::GetEnvironmentVariable($EnvVarName, "User")
+    if ($currentValue -eq $InstallPath) {
+        Write-Host "[INFO] User environment variable $EnvVarName is already set."
+        return
     }
 
-    # ダウンロード
-    Write-Host "[INFO] Npcap SDK $SdkVersion をダウンロード中..."
+    [System.Environment]::SetEnvironmentVariable($EnvVarName, $InstallPath, "User")
+    $env:NPCAP_SDK_DIR = $InstallPath
+    Write-Host "[INFO] Set user environment variable $EnvVarName to $InstallPath."
+}
+
+function Test-NpcapSdkLayout {
+    $libPath = Join-Path $InstallPath "Lib\x64"
+    if (-not (Test-Path $libPath)) {
+        Write-Error "[ERROR] Expected SDK library directory was not found: $libPath"
+        exit 1
+    }
+}
+
+function Main {
+    if (Test-Path $InstallPath) {
+        Write-Host "[INFO] $InstallPath already exists."
+        $answer = Read-Host "Overwrite it? (y/N)"
+        if ($answer -ne "y") {
+            Write-Host "[INFO] Skipped download and extraction."
+            Test-NpcapSdkLayout
+            Set-NpcapSdkEnvVar
+            return
+        }
+
+        Remove-Item -Recurse -Force $InstallPath
+        Write-Host "[INFO] Removed existing directory."
+    }
+
+    Write-Host "[INFO] Downloading Npcap SDK $SdkVersion..."
     try {
         Invoke-WebRequest -Uri $SdkUrl -OutFile $ZipPath -UseBasicParsing
     }
     catch {
-        Write-Error "[ERROR] ダウンロードに失敗しました: $_"
+        Write-Error "[ERROR] Failed to download Npcap SDK: $_"
         exit 1
     }
 
     if (-not (Test-Path $ZipPath)) {
-        Write-Error "[ERROR] ZIPファイルが見つかりません: $ZipPath"
+        Write-Error "[ERROR] ZIP file was not found: $ZipPath"
         exit 1
     }
 
-    # 展開
-    Write-Host "[INFO] $InstallPath に展開中..."
+    Write-Host "[INFO] Extracting to $InstallPath..."
     try {
         Expand-Archive -Path $ZipPath -DestinationPath $InstallPath -Force
     }
     catch {
-        Write-Error "[ERROR] 展開に失敗しました: $_"
+        Write-Error "[ERROR] Failed to extract Npcap SDK: $_"
         exit 1
     }
 
-    # ZIPファイルを削除
     Remove-Item -Force $ZipPath -ErrorAction SilentlyContinue
 
-    # 環境変数をセット
-    Set-EnvVar
+    Test-NpcapSdkLayout
+    Set-NpcapSdkEnvVar
 
     Write-Host ""
-    Write-Host "[SUCCESS] Npcap SDK $SdkVersion のセットアップが完了しました。"
-    Write-Host "  インストール先 : $InstallPath"
-    Write-Host "  環境変数       : $EnvVarName = $InstallPath"
+    Write-Host "[SUCCESS] Npcap SDK $SdkVersion setup completed."
+    Write-Host "  Install path : $InstallPath"
+    Write-Host "  Env var      : $EnvVarName = $InstallPath"
     Write-Host ""
-    Write-Host "※ 新しいターミナルを開くと環境変数が反映されます。"
-}
-
-function Set-EnvVar {
-    $currentValue = [System.Environment]::GetEnvironmentVariable($EnvVarName, "User")
-    if ($currentValue -eq $InstallPath) {
-        Write-Host "[INFO] 環境変数 $EnvVarName は既に設定済みです。"
-        return
-    }
-    [System.Environment]::SetEnvironmentVariable($EnvVarName, $InstallPath, "User")
-    # 現在のセッションにも反映
-    $env:NPCAP_SDK_DIR = $InstallPath
-    Write-Host "[INFO] ユーザー環境変数 $EnvVarName を $InstallPath に設定しました。"
+    Write-Host "Open a new terminal if another process needs the updated user environment."
 }
 
 Main

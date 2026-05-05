@@ -28,10 +28,7 @@ pub fn get_active_network_info(config: &NetworkConfig) -> Result<NetworkInfo, Ap
                 let mask = network.mask();
                 let broadcast = network.broadcast();
 
-                let gateway = default_if
-                    .gateway
-                    .as_ref()
-                    .map(|gw| gw.ip_addr.to_string());
+                let gateway = default_if.gateway.as_ref().map(|gw| gw.ip_addr.to_string());
 
                 log::info!(
                     "Step 1 (default-net): detected interface '{}' with IP {}",
@@ -47,7 +44,9 @@ pub fn get_active_network_info(config: &NetworkConfig) -> Result<NetworkInfo, Ap
                     gateway,
                 });
             }
-            step_errors.push("Step 1 (default-net): no IPv4 address found on default interface".to_string());
+            step_errors.push(
+                "Step 1 (default-net): no IPv4 address found on default interface".to_string(),
+            );
         }
         Err(e) => {
             let msg = format!("Step 1 (default-net): {}", e);
@@ -89,7 +88,8 @@ pub fn get_active_network_info(config: &NetworkConfig) -> Result<NetworkInfo, Ap
         if !found_any {
             step_errors.push("Step 2 (pnet_datalink): no interfaces found".to_string());
         } else {
-            step_errors.push("Step 2 (pnet_datalink): no suitable IPv4 interface found".to_string());
+            step_errors
+                .push("Step 2 (pnet_datalink): no suitable IPv4 interface found".to_string());
         }
     } else {
         let msg = "Step 2 (pnet_datalink): skipped (Npcap not available)".to_string();
@@ -394,9 +394,9 @@ fn is_ipv4_pattern(s: &str) -> bool {
     if parts.len() != 4 {
         return false;
     }
-    parts.iter().all(|p| {
-        !p.is_empty() && p.len() <= 3 && p.chars().all(|c| c.is_ascii_digit())
-    })
+    parts
+        .iter()
+        .all(|p| !p.is_empty() && p.len() <= 3 && p.chars().all(|c| c.is_ascii_digit()))
 }
 
 /// Find the interface name from a line above the current index in `ip addr show` output.

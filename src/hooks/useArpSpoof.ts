@@ -12,9 +12,9 @@ export function useArpSpoof() {
     packetCount: number
   ) => {
     return startCmd.execute({
-      target_ip: targetIp,
-      gateway_ip: gatewayIp,
-      packet_count: packetCount,
+      targetIp,
+      gatewayIp,
+      packetCount,
     });
   };
 

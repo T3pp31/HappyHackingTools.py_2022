@@ -22,19 +22,11 @@ pub async fn start_arp_spoof(
     if !crate::network::npcap::is_npcap_available() {
         return Err(AppError::NpcapNotFound(NPCAP_DOWNLOAD_URL.to_string()));
     }
-    crate::network::arp_spoof::start(
-        &target_ip,
-        &gateway_ip,
-        packet_count,
-        &state,
-    )
-    .await
+    crate::network::arp_spoof::start(&target_ip, &gateway_ip, packet_count, &state).await
 }
 
 #[tauri::command]
-pub async fn stop_arp_spoof(
-    state: tauri::State<'_, AppState>,
-) -> Result<ArpSpoofStatus, AppError> {
+pub async fn stop_arp_spoof(state: tauri::State<'_, AppState>) -> Result<ArpSpoofStatus, AppError> {
     crate::network::arp_spoof::stop(&state).await
 }
 
