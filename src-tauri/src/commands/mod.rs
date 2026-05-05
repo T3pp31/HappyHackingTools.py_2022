@@ -4,3 +4,4 @@ pub mod lan_scan;
 pub mod network_info;
 pub mod npcap;
 pub mod port_scan;
+pub mod web_check;

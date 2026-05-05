@@ -8,6 +8,7 @@ poison_interval_sec = 2
 reset_packet_count = 5
 progress_report_interval = 100
 lan_scan_arp_retry_count = 1
+lan_scan_concurrency = 32
 
 [vendor]
 api_url = "http://macvendors.co/api/"

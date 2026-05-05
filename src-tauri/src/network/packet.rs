@@ -41,19 +41,15 @@ pub fn build_arp_packet(
     };
 
     {
-        let mut ethernet_packet =
-            MutableEthernetPacket::new(&mut buffer).ok_or_else(|| {
-                AppError::Network("Failed to create Ethernet packet".to_string())
-            })?;
+        let mut ethernet_packet = MutableEthernetPacket::new(&mut buffer)
+            .ok_or_else(|| AppError::Network("Failed to create Ethernet packet".to_string()))?;
 
         ethernet_packet.set_destination(destination);
         ethernet_packet.set_source(sender_mac);
         ethernet_packet.set_ethertype(EtherTypes::Arp);
 
-        let mut arp_packet =
-            MutableArpPacket::new(ethernet_packet.payload_mut()).ok_or_else(|| {
-                AppError::Network("Failed to create ARP packet".to_string())
-            })?;
+        let mut arp_packet = MutableArpPacket::new(ethernet_packet.payload_mut())
+            .ok_or_else(|| AppError::Network("Failed to create ARP packet".to_string()))?;
 
         arp_packet.set_hardware_type(ArpHardwareTypes::Ethernet);
         arp_packet.set_protocol_type(EtherTypes::Ipv4);

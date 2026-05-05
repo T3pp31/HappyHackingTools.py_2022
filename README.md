@@ -164,6 +164,7 @@ Npcap SDK は以下のいずれかの方法で配置してください。
 | `[scan]` | `reset_packet_count` | ARP 停止時に送信する復旧パケット数 |
 | `[scan]` | `progress_report_interval` | 進捗イベント送信間隔 |
 | `[scan]` | `lan_scan_arp_retry_count` | LAN スキャン時の ARP リトライ回数 |
+| `[scan]` | `lan_scan_concurrency` | LAN スキャン同時実行数 |
 | `[vendor]` | `api_url` | MAC ベンダー API の URL |
 | `[vendor]` | `use_local_oui` | ローカル OUI データベースの使用 |
 | `[vendor]` | `api_timeout_ms` | MAC ベンダー API タイムアウト (ms) |

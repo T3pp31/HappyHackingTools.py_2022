@@ -9,6 +9,10 @@ export const PORT_SCAN_DEFAULTS = {
   portEnd: "1024",
 };
 
+export const WEB_CHECK_DEFAULTS = {
+  targetUrl: "https://example.com",
+};
+
 export const ARP_SPOOF_DEFAULTS = {
   packetCount: "200",
 };

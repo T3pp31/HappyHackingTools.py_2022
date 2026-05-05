@@ -18,6 +18,7 @@ describe("README consistency", () => {
     assert.match(readme, /reset_packet_count/);
     assert.match(readme, /progress_report_interval/);
     assert.match(readme, /lan_scan_arp_retry_count/);
+    assert.match(readme, /lan_scan_concurrency/);
     assert.match(readme, /api_timeout_ms/);
     assert.match(readme, /user_agent/);
     assert.match(readme, /udp_probe_target/);

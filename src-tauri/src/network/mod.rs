@@ -6,3 +6,4 @@ pub mod npcap;
 pub mod packet;
 pub mod port_scan;
 pub mod vendor;
+pub mod web_check;

@@ -22,7 +22,9 @@ pub async fn start(
     {
         let runtime_state = state.arp_spoof_state.lock().await;
         if runtime_state.is_running {
-            return Err(AppError::ArpSpoof("ARP spoofing is already running".to_string()));
+            return Err(AppError::ArpSpoof(
+                "ARP spoofing is already running".to_string(),
+            ));
         }
     }
 
@@ -172,7 +174,11 @@ async fn run_spoof(
 
     let (mut tx, _rx) = match pnet_datalink::channel(&interface, config) {
         Ok(Channel::Ethernet(tx, rx)) => (tx, rx),
-        _ => return Err(AppError::ArpSpoof("Cannot open datalink channel".to_string())),
+        _ => {
+            return Err(AppError::ArpSpoof(
+                "Cannot open datalink channel".to_string(),
+            ))
+        }
     };
 
     loop {
@@ -220,7 +226,9 @@ async fn run_spoof(
         tokio::time::sleep(Duration::from_secs(poison_interval_sec)).await;
     }
 
-    savefile.flush().map_err(|e| AppError::ArpSpoof(format!("pcap flush error: {}", e)))?;
+    savefile
+        .flush()
+        .map_err(|e| AppError::ArpSpoof(format!("pcap flush error: {}", e)))?;
 
     // Reset ARP tables
     for _ in 0..reset_count {

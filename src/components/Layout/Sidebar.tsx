@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { path: "/", label: "Home" },
   { path: "/lanscan", label: "LAN Scan" },
   { path: "/portscan", label: "Port Scan" },
+  { path: "/web-check", label: "Web Check" },
   { path: "/arp-spoof", label: "ARP Spoof" },
   { path: "/binary", label: "Binary" },
   { path: "/ctf", label: "CTF" },

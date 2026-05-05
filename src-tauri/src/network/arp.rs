@@ -19,12 +19,7 @@ mod platform {
     #[link(name = "iphlpapi")]
     extern "system" {
         /// <https://learn.microsoft.com/en-us/windows/win32/api/iphlpapi/nf-iphlpapi-sendarp>
-        fn SendARP(
-            DestIP: u32,
-            SrcIP: u32,
-            pMacAddr: *mut u8,
-            PhyAddrLen: *mut u32,
-        ) -> u32;
+        fn SendARP(DestIP: u32, SrcIP: u32, pMacAddr: *mut u8, PhyAddrLen: *mut u32) -> u32;
     }
 
     /// Resolve a MAC address for `ip_address` using the Windows SendARP API.
@@ -57,14 +52,7 @@ mod platform {
         let mut mac_buf = [0u8; MAC_ADDR_BUF_SIZE];
         let mut phy_addr_len: u32 = MAC_ADDR_LEN;
 
-        let ret = unsafe {
-            SendARP(
-                dest_ip,
-                src_ip,
-                mac_buf.as_mut_ptr(),
-                &mut phy_addr_len,
-            )
-        };
+        let ret = unsafe { SendARP(dest_ip, src_ip, mac_buf.as_mut_ptr(), &mut phy_addr_len) };
 
         if ret == NO_ERROR {
             Ok(Some(format_mac_address(&mac_buf)))
@@ -78,12 +66,7 @@ mod platform {
     fn format_mac_address(mac_bytes: &[u8; MAC_ADDR_BUF_SIZE]) -> String {
         format!(
             "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
-            mac_bytes[0],
-            mac_bytes[1],
-            mac_bytes[2],
-            mac_bytes[3],
-            mac_bytes[4],
-            mac_bytes[5],
+            mac_bytes[0], mac_bytes[1], mac_bytes[2], mac_bytes[3], mac_bytes[4], mac_bytes[5],
         )
     }
 
@@ -259,7 +242,10 @@ mod tests {
         // Given: an obviously invalid IP address
         let result = get_mac("not_an_ip", "eth0", 1000, 1);
         // Then: the result must be an error
-        assert!(result.is_err(), "Expected an error for an invalid IP address");
+        assert!(
+            result.is_err(),
+            "Expected an error for an invalid IP address"
+        );
 
         let err = result.unwrap_err();
         let msg = err.to_string();
