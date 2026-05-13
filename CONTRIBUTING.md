@@ -53,5 +53,21 @@ npx tauri dev
 
 ## テスト
 
-- `node --test tests/buildRsConsistency.test.mjs tests/readmeConsistency.test.mjs tests/releaseWorkflowConsistency.test.mjs tests/repoCleanupConsistency.test.mjs`
-- `cargo test --manifest-path tools/windows-bootstrapper/Cargo.toml`
+PR / `main` push では `.github/workflows/ci.yml` が軽量 CI として動作し、リリース成果物を作る `.github/workflows/build-release.yml` とは分離しています。
+
+ローカルでも PR 前に最低限以下を確認してください。
+
+```bash
+npm run lint
+npm run build
+npm test
+npm run test:consistency
+cargo check --manifest-path src-tauri/Cargo.toml
+cargo test --manifest-path src-tauri/Cargo.toml
+```
+
+Windows bootstrapper を変更した場合は、追加で以下を実行してください。
+
+```bash
+cargo test --manifest-path tools/windows-bootstrapper/Cargo.toml
+```
