@@ -117,6 +117,13 @@ describe("Tauri invoke args", () => {
       file_size: 0,
       hex_dump: "",
       decoded_text: "",
+      magic_bytes: "",
+      file_type_guess: "Unknown",
+      sha256: "",
+      printable_strings: [],
+      flag_candidates: [],
+      entropy: 0,
+      warnings: [],
     });
 
     render(<BinaryPage />);

@@ -26,3 +26,10 @@ prefer_rust_implementation = true
 [paths]
 pcap_output_dir = "captured"
 pcap_filename = "arper.pcap"
+
+[binary_analysis]
+max_read_bytes = 10485760
+hex_preview_bytes = 4096
+decoded_text_preview_bytes = 8192
+max_strings = 200
+min_string_length = 4

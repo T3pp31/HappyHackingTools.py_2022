@@ -39,3 +39,5 @@ ipnetwork = "0.20"
 default-net = "0.22"
 directories = "6"
 pcap = "2"
+
+sha2 = "0.10"

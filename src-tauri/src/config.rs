@@ -11,6 +11,7 @@ pub struct AppConfig {
     pub network: NetworkConfig,
     pub feature_flags: FeatureFlagsConfig,
     pub paths: PathsConfig,
+    pub binary_analysis: BinaryAnalysisConfig,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -50,6 +51,15 @@ pub struct FeatureFlagsConfig {
 pub struct PathsConfig {
     pub pcap_output_dir: String,
     pub pcap_filename: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct BinaryAnalysisConfig {
+    pub max_read_bytes: usize,
+    pub hex_preview_bytes: usize,
+    pub decoded_text_preview_bytes: usize,
+    pub max_strings: usize,
+    pub min_string_length: usize,
 }
 
 impl AppConfig {
@@ -106,6 +116,13 @@ impl Default for AppConfig {
             paths: PathsConfig {
                 pcap_output_dir: "captured".to_string(),
                 pcap_filename: "arper.pcap".to_string(),
+            },
+            binary_analysis: BinaryAnalysisConfig {
+                max_read_bytes: 10 * 1024 * 1024,
+                hex_preview_bytes: 4096,
+                decoded_text_preview_bytes: 8192,
+                max_strings: 200,
+                min_string_length: 4,
             },
         }
     }
