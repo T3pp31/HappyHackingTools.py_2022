@@ -43,6 +43,7 @@ pub fn run() {
             commands::arp_spoof::stop_arp_spoof,
             commands::arp_spoof::get_arp_spoof_status,
             commands::binary::read_binary_file,
+            commands::ctf::write_ctf_writeup,
             commands::npcap::check_npcap,
             commands::web_check::web_check,
         ])
