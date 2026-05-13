@@ -20,7 +20,7 @@ export const BinaryPage: React.FC = () => {
     <div>
       <h2 style={{ marginBottom: "8px", fontSize: "20px" }}>Binary Analysis</h2>
       <p style={{ color: "var(--text-secondary)", fontSize: "13px", marginBottom: "20px" }}>
-        View hex dump and decoded text of any file.
+        View CTF-oriented summary, hashes, strings, flags, hex dump, and decoded text of any file.
       </p>
 
       <button onClick={handleSelectFile} disabled={loading} style={buttonStyle}>
@@ -32,22 +32,91 @@ export const BinaryPage: React.FC = () => {
 
       {data && (
         <div style={{ marginTop: "20px" }}>
-          <div style={{ marginBottom: "8px", fontSize: "13px", color: "var(--text-secondary)" }}>
-            {data.file_name} ({data.file_size} bytes)
-          </div>
+          <Section title="Summary">
+            <dl style={definitionListStyle}>
+              <dt>File Name</dt>
+              <dd>{data.file_name}</dd>
+              <dt>File Size</dt>
+              <dd>{data.file_size} bytes</dd>
+              <dt>File Type Guess</dt>
+              <dd>{data.file_type_guess}</dd>
+              <dt>Entropy</dt>
+              <dd>{data.entropy.toFixed(4)} bits/byte</dd>
+            </dl>
+          </Section>
 
-          <h3 style={{ fontSize: "14px", color: "var(--accent)", marginBottom: "8px" }}>
-            Hex Dump
-          </h3>
-          <pre style={preStyle}>{data.hex_dump}</pre>
+          <Section title="Hashes">
+            <dl style={definitionListStyle}>
+              <dt>SHA-256</dt>
+              <dd style={hashValueStyle}>{data.sha256}</dd>
+              <dt>SHA-1</dt>
+              <dd style={hashValueStyle}>{data.sha1}</dd>
+              <dt>MD5</dt>
+              <dd style={hashValueStyle}>{data.md5}</dd>
+            </dl>
+          </Section>
 
-          <h3 style={{ fontSize: "14px", color: "var(--accent)", margin: "16px 0 8px" }}>
-            Decoded Text
-          </h3>
-          <pre style={preStyle}>{data.decoded_text}</pre>
+          <Section title="Magic Bytes">
+            <pre style={preStyle}>{data.magic_bytes || "(none)"}</pre>
+          </Section>
+
+          <Section title="Strings">
+            <StringList values={data.printable_strings} emptyMessage="No printable strings found." />
+          </Section>
+
+          <Section title="Flag Candidates">
+            <StringList values={data.flag_candidates} emptyMessage="No flag candidates found." />
+          </Section>
+
+          <Section title="Warnings">
+            <StringList values={data.warnings} emptyMessage="No warnings." />
+          </Section>
+
+          <Section title="Hex Dump">
+            <pre style={preStyle}>{data.hex_dump}</pre>
+          </Section>
+
+          <Section title="Decoded Text">
+            <pre style={preStyle}>{data.decoded_text}</pre>
+          </Section>
         </div>
       )}
     </div>
+  );
+};
+
+interface SectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+const Section: React.FC<SectionProps> = ({ title, children }) => (
+  <section style={{ marginTop: "16px" }}>
+    <h3 style={{ fontSize: "14px", color: "var(--accent)", marginBottom: "8px" }}>
+      {title}
+    </h3>
+    {children}
+  </section>
+);
+
+interface StringListProps {
+  values: string[];
+  emptyMessage: string;
+}
+
+const StringList: React.FC<StringListProps> = ({ values, emptyMessage }) => {
+  if (values.length === 0) {
+    return <div style={emptyStyle}>{emptyMessage}</div>;
+  }
+
+  return (
+    <ul style={listStyle}>
+      {values.map((value, index) => (
+        <li key={`${value}-${index}`}>
+          <code>{value}</code>
+        </li>
+      ))}
+    </ul>
   );
 };
 
@@ -73,4 +142,33 @@ const preStyle: React.CSSProperties = {
   maxHeight: "300px",
   whiteSpace: "pre-wrap",
   wordBreak: "break-all",
+};
+
+const definitionListStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "140px minmax(0, 1fr)",
+  gap: "8px 12px",
+  margin: 0,
+  fontSize: "13px",
+};
+
+const hashValueStyle: React.CSSProperties = {
+  wordBreak: "break-all",
+  fontFamily: "monospace",
+};
+
+const listStyle: React.CSSProperties = {
+  backgroundColor: "var(--bg-secondary)",
+  border: "1px solid var(--border)",
+  borderRadius: "var(--radius)",
+  margin: 0,
+  maxHeight: "220px",
+  overflow: "auto",
+  padding: "12px 16px 12px 32px",
+  fontSize: "12px",
+};
+
+const emptyStyle: React.CSSProperties = {
+  color: "var(--text-secondary)",
+  fontSize: "13px",
 };

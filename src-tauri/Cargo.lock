@@ -1443,6 +1443,7 @@ dependencies = [
  "futures",
  "ipnetwork",
  "log",
+ "openssl",
  "pcap",
  "pnet",
  "pnet_datalink",
