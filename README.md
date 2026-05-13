@@ -1,9 +1,9 @@
 # HappyHackingTools
 
-ネットワークセキュリティツールキットのデスクトップアプリケーションです。
-ペネトレーションテストやCTFの学習・実践を目的として開発しています。
+CTF Solver Workbench として使える、CTF解法支援デスクトップアプリです。
+Local-first CTF Assistant として、問題文・入力文字列・配布ファイル・解析メモを手元で扱いながら、flag 候補の発見と writeup 作成までを支援することを目指しています。
 
-A desktop network security toolkit built with Rust + Tauri v2 and React/TypeScript frontend, designed for penetration testing and CTF practice.
+A local-first CTF solver workbench built with Rust + Tauri v2 and a React/TypeScript frontend, designed to help organize CTF workspaces, transform challenge strings, inspect artifacts, detect flag candidates, and export writeups.
 
 ## インストール
 
@@ -43,13 +43,26 @@ The owner of this repository assumes no responsibility whatsoever.
 
 ## 機能一覧
 
+### CTF 解法支援の主機能
+
+| 機能 | 説明 |
+|------|------|
+| CTF Workspace | 問題ごとのメモ、入力、成果物、解析状況をまとめる作業スペース |
+| String Transform | Base64、URL エンコード、文字コード、簡易置換などの文字列変換支援 |
+| Artifact Analyzer | 配布ファイルのバイナリ表示、文字列抽出、メタ情報確認などの初動解析 |
+| Flag Candidate Detection | 解析結果や入力テキストから flag 形式らしい候補を抽出・整理 |
+| Writeup Export | 解法メモ、コマンド履歴、発見した flag 候補を writeup として出力 |
+
+### Advanced / Network Lab / Legacy・Experimental
+
+以下はネットワーク検証や学習用の補助機能です。CTF 解法ワークフローの中心機能ではなく、必要な環境・権限・Npcap 依存を確認したうえで使用します。
+
 | 機能 | 説明 |
 |------|------|
 | LAN スキャン | ARP を使用したローカルネットワーク内のホスト検出、ベンダー情報の取得 |
 | ポートスキャン | 指定ホストのオープンポート検出 |
 | ARP スプーフィング | ARP テーブルのポイズニングとパケットスニッフィング |
-| バイナリビューア | ファイルのバイナリ表示 |
-| CTF ツール | CTF 向けユーティリティ |
+| Web Check | Web 問題や検証対象の基本チェック補助 |
 | ネットワーク情報 | ネットワークインターフェース情報の表示 |
 
 ## ディレクトリ構成
