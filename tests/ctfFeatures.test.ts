@@ -81,4 +81,17 @@ describe("CTF feature modules", () => {
     expect(detections).toHaveLength(1);
     expect(detections[0]?.type).toBe("custom-key");
   });
+
+  it("URL encoded detector が連続したエンコード文字列を1件として検出すること", () => {
+    const detector = getDetector("url-encoded-candidate");
+    const input = "token=%66%6c%61%67%7Bsample%7D";
+    const detections = detector?.detect(input) ?? [];
+
+    expect(detections).toHaveLength(1);
+    expect(detections[0]).toMatchObject({
+      type: "url-encoded",
+      range: { start: 6, end: input.length },
+      recommendedActions: ["url-decode"],
+    });
+  });
 });

@@ -3,7 +3,7 @@ import type { CtfDetection, CtfDetector } from "./types";
 
 const BASE64_CANDIDATE_PATTERN = /(?:[A-Za-z0-9+/]{4}){3,}(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?/g;
 const HEX_CANDIDATE_PATTERN = /(?:0x)?(?:[0-9a-fA-F]{2}[\s:-]?){4,}/g;
-const URL_ENCODED_PATTERN = /%(?:[0-9a-fA-F]{2})/g;
+const URL_ENCODED_PATTERN = /(?:%[0-9a-fA-F]{2})+/g;
 
 const createDetection = (
   type: string,
