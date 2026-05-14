@@ -11,6 +11,7 @@ pub struct AppConfig {
     pub network: NetworkConfig,
     pub feature_flags: FeatureFlagsConfig,
     pub paths: PathsConfig,
+    #[serde(default)]
     pub binary_analysis: BinaryAnalysisConfig,
 }
 
@@ -117,13 +118,19 @@ impl Default for AppConfig {
                 pcap_output_dir: "captured".to_string(),
                 pcap_filename: "arper.pcap".to_string(),
             },
-            binary_analysis: BinaryAnalysisConfig {
-                max_read_bytes: 10 * 1024 * 1024,
-                hex_preview_bytes: 4096,
-                decoded_text_preview_bytes: 8192,
-                max_strings: 200,
-                min_string_length: 4,
-            },
+            binary_analysis: BinaryAnalysisConfig::default(),
+        }
+    }
+}
+
+impl Default for BinaryAnalysisConfig {
+    fn default() -> Self {
+        Self {
+            max_read_bytes: 10 * 1024 * 1024,
+            hex_preview_bytes: 4096,
+            decoded_text_preview_bytes: 8192,
+            max_strings: 200,
+            min_string_length: 4,
         }
     }
 }
