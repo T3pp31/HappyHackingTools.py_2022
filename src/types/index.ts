@@ -111,6 +111,15 @@ export interface BinaryContent {
   decoded_text: string;
   file_size: number;
   file_name: string;
+  magic_bytes: string;
+  file_type_guess: string;
+  sha256: string;
+  sha1: string;
+  md5: string;
+  printable_strings: string[];
+  flag_candidates: string[];
+  entropy: number;
+  warnings: string[];
 }
 
 export interface ScanProgress {
