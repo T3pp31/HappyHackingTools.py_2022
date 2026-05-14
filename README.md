@@ -153,13 +153,17 @@ Npcap SDK は以下のいずれかの方法で配置してください。
 | `npx tauri build` | リリースビルド |
 | `npm run build` | フロントエンドのみビルド |
 | `npm run lint` | ESLint によるコード検査 |
-| `npx vitest` | テスト実行 |
+| `npm test` | Vitest テスト実行 |
+| `npm run test:consistency` | `tests/*.test.mjs` の node:test 整合性チェック |
 | `npx vitest --coverage` | カバレッジ付きテスト実行 |
 | `node --test tests/buildRsConsistency.test.mjs` | `build.rs` の構造検証 |
 | `node --test tests/readmeConsistency.test.mjs` | README 整合性チェック |
 | `node --test tests/buildDelayLoadConsistency.test.mjs` | 遅延ロード設定の回帰チェック |
+| `node --test tests/ciWorkflowConsistency.test.mjs` | CI workflow / Contributor 文書の整合性チェック |
 | `node --test tests/releaseWorkflowConsistency.test.mjs` | Release / Contributor 文書の整合性チェック |
 | `node --test tests/repoCleanupConsistency.test.mjs` | 不要生成物・旧資産の再混入防止チェック |
+| `cargo check --manifest-path src-tauri/Cargo.toml` | Rust/Tauri バックエンドの型・依存関係チェック |
+| `cargo test --manifest-path src-tauri/Cargo.toml` | Rust/Tauri バックエンドの単体テスト |
 | `cargo test --manifest-path tools/windows-bootstrapper/Cargo.toml` | Windows bootstrapper の単体テスト |
 
 ## 設定
