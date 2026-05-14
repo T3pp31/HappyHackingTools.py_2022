@@ -11,6 +11,7 @@ pub struct AppConfig {
     pub network: NetworkConfig,
     pub feature_flags: FeatureFlagsConfig,
     pub paths: PathsConfig,
+    #[serde(default)]
     pub binary: BinaryConfig,
 }
 
@@ -119,15 +120,21 @@ impl Default for AppConfig {
                 pcap_output_dir: "captured".to_string(),
                 pcap_filename: "arper.pcap".to_string(),
             },
-            binary: BinaryConfig {
-                max_read_bytes: 1_048_576,
-                hex_dump_bytes: 4_096,
-                decoded_text_max_chars: 16_384,
-                max_strings: 200,
-                min_string_len: 4,
-                magic_bytes_len: 16,
-                max_flag_candidates: 50,
-            },
+            binary: BinaryConfig::default(),
+        }
+    }
+}
+
+impl Default for BinaryConfig {
+    fn default() -> Self {
+        Self {
+            max_read_bytes: 1_048_576,
+            hex_dump_bytes: 4_096,
+            decoded_text_max_chars: 16_384,
+            max_strings: 200,
+            min_string_len: 4,
+            magic_bytes_len: 16,
+            max_flag_candidates: 50,
         }
     }
 }
