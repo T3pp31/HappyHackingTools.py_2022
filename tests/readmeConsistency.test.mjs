@@ -39,6 +39,7 @@ describe("README consistency", () => {
     assert.match(readme, /node --test tests\/buildRsConsistency\.test\.mjs/);
     assert.match(readme, /node --test tests\/readmeConsistency\.test\.mjs/);
     assert.match(readme, /node --test tests\/buildDelayLoadConsistency\.test\.mjs/);
+    assert.match(readme, /node --test tests\/ciWorkflowConsistency\.test\.mjs/);
     assert.match(readme, /node --test tests\/releaseWorkflowConsistency\.test\.mjs/);
     assert.match(readme, /node --test tests\/repoCleanupConsistency\.test\.mjs/);
     assert.match(readme, /cargo test --manifest-path tools\/windows-bootstrapper\/Cargo\.toml/);
