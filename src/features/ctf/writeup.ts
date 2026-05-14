@@ -19,6 +19,10 @@ export const generateCtfWriteupMarkdown = (workspace: CtfWorkspace): string => {
   const finalFlag =
     workspace.finalFlag ??
     workspace.flagCandidates.find((candidate) => candidate.isFinal)?.value;
+  const chronologicalOperations = [...workspace.operations].sort(
+    (left, right) =>
+      new Date(left.executedAt).getTime() - new Date(right.executedAt).getTime(),
+  );
 
   const sections = [
     `# ${normalizeLines(workspace.challengeName)}`,
@@ -43,7 +47,7 @@ export const generateCtfWriteupMarkdown = (workspace: CtfWorkspace): string => {
     ),
     "## Steps",
     listItems(
-      workspace.operations.map(
+      chronologicalOperations.map(
         (operation) =>
           `**${operation.name}** (${operation.status}, ${formatDateTime(operation.executedAt)})\n  - Input: ${normalizeLines(operation.inputSummary)}\n  - Output: ${normalizeLines(operation.outputSummary)}\n  - Notes: ${normalizeLines(operation.notes)}`
       )
