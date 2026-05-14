@@ -48,7 +48,7 @@ The owner of this repository assumes no responsibility whatsoever.
 | 機能 | 説明 |
 |------|------|
 | CTF Workspace | 問題ごとのメモ、入力、成果物、解析状況をまとめる作業スペース |
-| String Transform | Base64、URL エンコード、文字コード、簡易置換などの文字列変換支援 |
+| CTF Reference | CTFでよく使う調査観点、コマンド、解析の初動メモ |
 | Artifact Analyzer | 配布ファイルのバイナリ表示、文字列抽出、メタ情報確認などの初動解析 |
 | Flag Candidate Detection | 解析結果や入力テキストから flag 形式らしい候補を抽出・整理 |
 | Writeup Export | 解法メモ、コマンド履歴、発見した flag 候補を writeup として出力 |

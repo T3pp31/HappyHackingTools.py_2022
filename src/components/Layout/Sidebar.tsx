@@ -18,7 +18,7 @@ const NAV_GROUPS: readonly NavGroup[] = [
     title: "CTF Solver",
     items: [
       { path: "/", label: "CTF Workspace", exact: true },
-      { path: "/ctf", label: "String Transform" },
+      { path: "/ctf", label: "CTF Reference" },
       { path: "/binary", label: "Artifact Analyzer" },
     ],
   },

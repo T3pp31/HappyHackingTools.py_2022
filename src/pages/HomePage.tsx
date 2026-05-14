@@ -24,9 +24,9 @@ type FlagCandidate = {
 
 const QUICK_ACTIONS: readonly QuickAction[] = [
   {
-    title: "入力から始める",
-    description: "問題文、暗号文、ログ片などを貼り付けて文字列変換の初動を開始します。",
-    actionLabel: "String Transform を開く",
+    title: "調査メモから始める",
+    description: "CTFでよく使う調査観点やコマンドを確認し、解析の初動を整理します。",
+    actionLabel: "CTF Reference を開く",
     to: "/ctf",
   },
   {
