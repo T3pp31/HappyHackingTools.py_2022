@@ -139,6 +139,7 @@ export const CtfPage: React.FC = () => {
   const handleTransform = (event: React.FormEvent) => {
     event.preventDefault();
     if (!canTransform) {
+      setResult(null);
       setError("変換する入力を貼り付けるか、ファイルを選択してください。");
       return;
     }
@@ -158,6 +159,7 @@ export const CtfPage: React.FC = () => {
         ...current,
       ]);
     } catch (caughtError) {
+      setResult(null);
       setError(caughtError instanceof Error ? caughtError.message : "変換に失敗しました。");
     }
   };
