@@ -83,7 +83,11 @@ where
 {
     let mut hasher = D::default();
     hasher.update(data);
-    format!("{:x}", hasher.finalize())
+    hasher
+        .finalize()
+        .iter()
+        .map(|byte| format!("{:02x}", byte))
+        .collect::<String>()
 }
 
 fn format_magic_bytes(data: &[u8]) -> String {
