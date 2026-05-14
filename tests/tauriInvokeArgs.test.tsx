@@ -117,6 +117,15 @@ describe("Tauri invoke args", () => {
       file_size: 0,
       hex_dump: "",
       decoded_text: "",
+      magic_bytes: "",
+      file_type_guess: "Empty file",
+      sha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      sha1: "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+      md5: "d41d8cd98f00b204e9800998ecf8427e",
+      printable_strings: [],
+      flag_candidates: [],
+      entropy: 0,
+      warnings: [],
     });
 
     render(<BinaryPage />);
@@ -130,4 +139,38 @@ describe("Tauri invoke args", () => {
       });
     });
   });
+  it("BinaryContentの解析セクションを表示すること", async () => {
+    mockOpen.mockResolvedValue("/tmp/flag.bin");
+    mockInvoke.mockResolvedValue({
+      file_name: "flag.bin",
+      file_size: 32,
+      hex_dump: "00000000  66 6c 61 67  |flag|\n",
+      decoded_text: "flag{demo}",
+      magic_bytes: "7f 45 4c 46",
+      file_type_guess: "ELF executable/shared object",
+      sha256: "a".repeat(64),
+      sha1: "b".repeat(40),
+      md5: "c".repeat(32),
+      printable_strings: ["flag{demo}"],
+      flag_candidates: ["flag{demo}"],
+      entropy: 3.5,
+      warnings: ["Hex dump is limited."],
+    });
+
+    render(<BinaryPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Select File" }));
+
+    expect(await screen.findByText("Summary")).toBeTruthy();
+    expect(screen.getByText("Hashes")).toBeTruthy();
+    expect(screen.getByText("Magic Bytes")).toBeTruthy();
+    expect(screen.getByText("Strings")).toBeTruthy();
+    expect(screen.getByText("Flag Candidates")).toBeTruthy();
+    expect(screen.getByText("Warnings")).toBeTruthy();
+    expect(screen.getAllByText("flag{demo}").length).toBeGreaterThan(0);
+    expect(screen.getByText("ELF executable/shared object")).toBeTruthy();
+    expect(screen.getByText("7f 45 4c 46")).toBeTruthy();
+    expect(screen.getByText("Hex dump is limited.")).toBeTruthy();
+  });
+
 });
