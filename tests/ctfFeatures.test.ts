@@ -84,7 +84,7 @@ describe("CTF feature modules", () => {
 
   it("URL encoded detector が連続したエンコード文字列を1件として検出すること", () => {
     const detector = getDetector("url-encoded-candidate");
-    const input = "token=%66%6c%61%67%7Bsample%7D";
+    const input = "token=%66%6c%61%67%7B%73%61%6d%70%6c%65%7D";
     const detections = detector?.detect(input) ?? [];
 
     expect(detections).toHaveLength(1);
