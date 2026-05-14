@@ -1,54 +1,18 @@
 import React, { useMemo, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
+import { CTF_DETECTORS } from "../features/ctf/detectors";
+import { DEFAULT_FLAG_PATTERNS } from "../features/ctf/flagPatterns";
 import {
   appendCtfOperation,
   createCtfOperation,
   createCtfWorkspace,
   updateCtfWorkspaceNotes,
 } from "../features/ctf/history";
+import { CTF_HINT_SECTIONS } from "../features/ctf/hints";
+import { CTF_TRANSFORMS } from "../features/ctf/transforms";
 import { generateCtfWriteupMarkdown } from "../features/ctf/writeup";
 import type { CtfOperationStatus } from "../features/ctf/types";
-
-const SECTIONS = [
-  {
-    title: "Forensics",
-    items: [
-      "Log analysis: grep, grep -v (exclude), uniq (deduplicate), sort",
-    ],
-  },
-  {
-    title: "Web",
-    items: ["Burpsuite"],
-  },
-  {
-    title: "Network",
-    items: ["Wireshark", "Scapy", "socket", "Port scan: nmap"],
-  },
-  {
-    title: "Binary",
-    items: [
-      "Binary editor: Hex Fiend",
-      "file: identify binary file type",
-      "less: view file contents",
-      "strings: extract readable strings",
-    ],
-  },
-  {
-    title: "Encoding",
-    items: [
-      "Base64: A-Z, a-z, 0-9, +, / (64 chars), ends with =",
-      'Decode: echo "encoded_string" | base64 -d -o output',
-    ],
-  },
-  {
-    title: "File Location",
-    items: [
-      "locate: find file location",
-      "VS Code SSH: browse files via GUI",
-    ],
-  },
-] as const;
 
 const DEFAULT_OPERATION_FORM = {
   name: "",
@@ -69,7 +33,7 @@ export const CtfPage: React.FC = () => {
   const [exportMessage, setExportMessage] = useState<string | null>(null);
   const markdownPreview = useMemo(
     () => generateCtfWriteupMarkdown(workspace),
-    [workspace]
+    [workspace],
   );
 
   const handleAddOperation = (event: React.FormEvent<HTMLFormElement>) => {
@@ -82,7 +46,7 @@ export const CtfPage: React.FC = () => {
     }
 
     setWorkspace((currentWorkspace) =>
-      appendCtfOperation(currentWorkspace, operation)
+      appendCtfOperation(currentWorkspace, operation),
     );
     setOperationForm(DEFAULT_OPERATION_FORM);
     setExportMessage(null);
@@ -90,20 +54,29 @@ export const CtfPage: React.FC = () => {
 
   const handleSaveMarkdown = async () => {
     setExportMessage(null);
-    const selectedPath = await save({
-      defaultPath: `${workspace.challengeName || "ctf-writeup"}.md`,
-      filters: [{ name: "Markdown", extensions: ["md"] }],
-    });
 
-    if (!selectedPath) {
-      return;
+    try {
+      const selectedPath = await save({
+        defaultPath: `${workspace.challengeName || "ctf-writeup"}.md`,
+        filters: [{ name: "Markdown", extensions: ["md"] }],
+      });
+
+      if (!selectedPath) {
+        return;
+      }
+
+      await invoke("write_ctf_writeup", {
+        filePath: selectedPath,
+        markdown: markdownPreview,
+      });
+      setExportMessage(`Markdownを書き出しました: ${selectedPath}`);
+    } catch (error) {
+      setExportMessage(
+        error instanceof Error
+          ? error.message
+          : "Markdownの書き出しに失敗しました。",
+      );
     }
-
-    await invoke("write_ctf_writeup", {
-      filePath: selectedPath,
-      markdown: markdownPreview,
-    });
-    setExportMessage(`Markdownを書き出しました: ${selectedPath}`);
   };
 
   return (
@@ -115,9 +88,11 @@ export const CtfPage: React.FC = () => {
         参照メモを見ながら、CTF Workspace の操作履歴とメモを記録できます。
       </p>
 
-      <div style={gridStyle}>
-        <section style={sectionStyle}>
-          <h3 style={headingStyle}>Workspace Memo</h3>
+      <div style={workspaceGridStyle}>
+        <section style={cardStyle} aria-labelledby="ctf-workspace-heading">
+          <h3 id="ctf-workspace-heading" style={sectionHeadingStyle}>
+            Workspace Memo
+          </h3>
           <label style={labelStyle} htmlFor="ctf-challenge-name">
             Challenge
           </label>
@@ -141,7 +116,7 @@ export const CtfPage: React.FC = () => {
             value={workspace.notes}
             onChange={(event) =>
               setWorkspace((currentWorkspace) =>
-                updateCtfWorkspaceNotes(currentWorkspace, event.target.value)
+                updateCtfWorkspaceNotes(currentWorkspace, event.target.value),
               )
             }
             placeholder="調査方針、詰まっている点、あとで確認することを記録"
@@ -154,8 +129,10 @@ export const CtfPage: React.FC = () => {
           {exportMessage && <p style={messageStyle}>{exportMessage}</p>}
         </section>
 
-        <section style={sectionStyle}>
-          <h3 style={headingStyle}>Operation Memo</h3>
+        <section style={cardStyle} aria-labelledby="ctf-operation-heading">
+          <h3 id="ctf-operation-heading" style={sectionHeadingStyle}>
+            Operation Memo
+          </h3>
           <form onSubmit={handleAddOperation}>
             <label style={labelStyle} htmlFor="ctf-operation-name">
               操作名
@@ -246,8 +223,10 @@ export const CtfPage: React.FC = () => {
         </section>
       </div>
 
-      <section style={sectionStyle}>
-        <h3 style={headingStyle}>History</h3>
+      <section style={cardStyle} aria-labelledby="ctf-history-heading">
+        <h3 id="ctf-history-heading" style={sectionHeadingStyle}>
+          History
+        </h3>
         {workspace.operations.length === 0 ? (
           <p style={descriptionStyle}>まだ操作履歴はありません。</p>
         ) : (
@@ -261,43 +240,94 @@ export const CtfPage: React.FC = () => {
                 <span style={statusStyle(operation.status)}>
                   {operation.status === "success" ? "成功" : "失敗"}
                 </span>
-                <p style={historyTextStyle}>Input: {operation.inputSummary || "未記録"}</p>
-                <p style={historyTextStyle}>Output: {operation.outputSummary || "未記録"}</p>
-                <p style={historyTextStyle}>Notes: {operation.notes || "未記録"}</p>
+                <p style={historyTextStyle}>
+                  Input: {operation.inputSummary || "未記録"}
+                </p>
+                <p style={historyTextStyle}>
+                  Output: {operation.outputSummary || "未記録"}
+                </p>
+                <p style={historyTextStyle}>
+                  Notes: {operation.notes || "未記録"}
+                </p>
               </li>
             ))}
           </ol>
         )}
       </section>
 
-      <section style={sectionStyle}>
-        <h3 style={headingStyle}>Writeup Preview</h3>
+      <section style={cardStyle} aria-labelledby="ctf-writeup-heading">
+        <h3 id="ctf-writeup-heading" style={sectionHeadingStyle}>
+          Writeup Preview
+        </h3>
         <pre style={preStyle}>{markdownPreview}</pre>
       </section>
 
-      {SECTIONS.map((section) => (
-        <section key={section.title} style={sectionStyle}>
-          <h3 style={headingStyle}>{section.title}</h3>
-          <ul style={{ paddingLeft: "20px", fontSize: "13px", color: "var(--text-secondary)" }}>
-            {section.items.map((item) => (
-              <li key={item} style={{ marginBottom: "4px" }}>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+      <section aria-labelledby="ctf-hints-heading">
+        <h3 id="ctf-hints-heading" style={groupHeadingStyle}>
+          Hints
+        </h3>
+        {CTF_HINT_SECTIONS.map((section) => (
+          <div key={section.title} style={cardStyle}>
+            <h4 style={cardHeadingStyle}>{section.title}</h4>
+            <ul style={listStyle}>
+              {section.items.map((item) => (
+                <li key={item} style={listItemStyle}>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+
+      <section aria-labelledby="ctf-transforms-heading" style={groupStyle}>
+        <h3 id="ctf-transforms-heading" style={groupHeadingStyle}>
+          Transforms
+        </h3>
+        <div style={referenceGridStyle}>
+          {CTF_TRANSFORMS.map((transform) => (
+            <article key={transform.id} style={cardStyle}>
+              <h4 style={cardHeadingStyle}>{transform.label}</h4>
+              <p style={referenceTextStyle}>{transform.description}</p>
+              <p style={metadataStyle}>Category: {transform.category}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="ctf-detectors-heading" style={groupStyle}>
+        <h3 id="ctf-detectors-heading" style={groupHeadingStyle}>
+          Detectors
+        </h3>
+        <div style={referenceGridStyle}>
+          {CTF_DETECTORS.map((detector) => (
+            <article key={detector.id} style={cardStyle}>
+              <h4 style={cardHeadingStyle}>{detector.label}</h4>
+              <p style={metadataStyle}>ID: {detector.id}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="ctf-flag-patterns-heading" style={groupStyle}>
+        <h3 id="ctf-flag-patterns-heading" style={groupHeadingStyle}>
+          Flag Patterns
+        </h3>
+        <div style={referenceGridStyle}>
+          {DEFAULT_FLAG_PATTERNS.map((pattern) => (
+            <article key={pattern.id} style={cardStyle}>
+              <h4 style={cardHeadingStyle}>{pattern.label}</h4>
+              <p style={referenceTextStyle}>{pattern.description}</p>
+              <p style={metadataStyle}>/{pattern.source}/{pattern.flags}</p>
+            </article>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };
 
-const gridStyle: React.CSSProperties = {
-  display: "grid",
-  gap: "12px",
-  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-};
-
-const sectionStyle: React.CSSProperties = {
+const cardStyle: React.CSSProperties = {
   backgroundColor: "var(--bg-secondary)",
   border: "1px solid var(--border)",
   borderRadius: "var(--radius)",
@@ -305,7 +335,34 @@ const sectionStyle: React.CSSProperties = {
   marginBottom: "12px",
 };
 
-const headingStyle: React.CSSProperties = {
+const workspaceGridStyle: React.CSSProperties = {
+  display: "grid",
+  gap: "12px",
+  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+};
+
+const referenceGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+  gap: "12px",
+};
+
+const groupStyle: React.CSSProperties = {
+  marginTop: "24px",
+};
+
+const groupHeadingStyle: React.CSSProperties = {
+  fontSize: "16px",
+  marginBottom: "12px",
+};
+
+const sectionHeadingStyle: React.CSSProperties = {
+  fontSize: "14px",
+  color: "var(--accent)",
+  marginBottom: "8px",
+};
+
+const cardHeadingStyle: React.CSSProperties = {
   fontSize: "14px",
   color: "var(--accent)",
   marginBottom: "8px",
@@ -315,6 +372,18 @@ const descriptionStyle: React.CSSProperties = {
   color: "var(--text-secondary)",
   fontSize: "13px",
   marginBottom: "20px",
+};
+
+const referenceTextStyle: React.CSSProperties = {
+  color: "var(--text-secondary)",
+  fontSize: "13px",
+  margin: 0,
+};
+
+const metadataStyle: React.CSSProperties = {
+  color: "var(--text-secondary)",
+  fontSize: "12px",
+  marginTop: "4px",
 };
 
 const labelStyle: React.CSSProperties = {
@@ -402,4 +471,14 @@ const preStyle: React.CSSProperties = {
   overflow: "auto",
   maxHeight: "300px",
   whiteSpace: "pre-wrap",
+};
+
+const listStyle: React.CSSProperties = {
+  paddingLeft: "20px",
+  fontSize: "13px",
+  color: "var(--text-secondary)",
+};
+
+const listItemStyle: React.CSSProperties = {
+  marginBottom: "4px",
 };
