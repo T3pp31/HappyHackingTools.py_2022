@@ -2,14 +2,35 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import styles from "./Sidebar.module.css";
 
-const NAV_ITEMS = [
-  { path: "/", label: "Home" },
-  { path: "/lanscan", label: "LAN Scan" },
-  { path: "/portscan", label: "Port Scan" },
-  { path: "/web-check", label: "Web Check" },
-  { path: "/arp-spoof", label: "ARP Spoof" },
-  { path: "/binary", label: "Binary" },
-  { path: "/ctf", label: "CTF" },
+type NavItem = {
+  path: string;
+  label: string;
+  exact?: boolean;
+};
+
+type NavGroup = {
+  title: string;
+  items: readonly NavItem[];
+};
+
+const NAV_GROUPS: readonly NavGroup[] = [
+  {
+    title: "CTF Solver",
+    items: [
+      { path: "/", label: "CTF Workspace", exact: true },
+      { path: "/ctf", label: "CTF Reference" },
+      { path: "/binary", label: "Artifact Analyzer" },
+    ],
+  },
+  {
+    title: "Advanced / Network Lab",
+    items: [
+      { path: "/web-check", label: "Web Check" },
+      { path: "/portscan", label: "Port Scan" },
+      { path: "/lanscan", label: "LAN Scan" },
+      { path: "/arp-spoof", label: "ARP Spoof" },
+    ],
+  },
 ] as const;
 
 export const Sidebar: React.FC = () => {
@@ -17,22 +38,30 @@ export const Sidebar: React.FC = () => {
     <nav className={styles.sidebar}>
       <div className={styles.logo}>
         <h2>HHTools</h2>
+        <p>Local-first CTF Assistant</p>
       </div>
-      <ul className={styles.navList}>
-        {NAV_ITEMS.map((item) => (
-          <li key={item.path}>
-            <NavLink
-              to={item.path}
-              end={item.path === "/"}
-              className={({ isActive }) =>
-                `${styles.navLink} ${isActive ? styles.active : ""}`
-              }
-            >
-              <span>{item.label}</span>
-            </NavLink>
-          </li>
+      <div className={styles.navGroups}>
+        {NAV_GROUPS.map((group) => (
+          <section key={group.title} className={styles.navGroup}>
+            <h3 className={styles.groupTitle}>{group.title}</h3>
+            <ul className={styles.navList}>
+              {group.items.map((item) => (
+                <li key={item.path}>
+                  <NavLink
+                    to={item.path}
+                    end={item.exact}
+                    className={({ isActive }) =>
+                      `${styles.navLink} ${isActive ? styles.active : ""}`
+                    }
+                  >
+                    <span>{item.label}</span>
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </section>
         ))}
-      </ul>
+      </div>
     </nav>
   );
 };
